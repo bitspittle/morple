@@ -1,0 +1,13 @@
+site:
+  title: "Morple"
+
+server:
+  files:
+    dev:
+      contentRoot: "build/processedResources/js/main/public"
+      script: "build/js/packages/morple/kotlin/morple.js"
+      api: "build/libs/morple.jar"
+    prod:
+      siteRoot: ".kobweb/site"
+
+  port: 8080

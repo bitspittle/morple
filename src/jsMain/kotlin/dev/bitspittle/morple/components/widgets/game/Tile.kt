@@ -11,7 +11,7 @@ import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.text.Text
-import dev.bitspittle.morple.TileColors
+import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 
 val FILLED_TILE_STYLE = Modifier
@@ -27,23 +27,23 @@ val TileStyle = ComponentStyle("morple-tile") {
             .textAlign(TextAlign.Center)
             .size(4.cssRem)
             .color(if (colorMode.isLight()) Colors.Black else Colors.Gray)
-            .border(2.px, LineStyle.Solid, TileColors.Absent.toCssColor())
+            .border(2.px, LineStyle.Solid, colorMode.toSitePalette().tile.absent.toCssColor())
     }
 }
 
 val AbsentTileStyle = TileStyle.addBaseVariant("absent") {
     FILLED_TILE_STYLE
-        .backgroundColor(TileColors.Absent.toCssColor())
+        .backgroundColor(colorMode.toSitePalette().tile.absent.toCssColor())
 }
 
 val PresentTileStyle = TileStyle.addBaseVariant("present") {
     FILLED_TILE_STYLE
-        .backgroundColor(TileColors.Present.toCssColor())
+        .backgroundColor(colorMode.toSitePalette().tile.present.toCssColor())
 }
 
 val MatchTileStyle = TileStyle.addBaseVariant("match") {
     FILLED_TILE_STYLE
-        .backgroundColor(TileColors.Match.toCssColor())
+        .backgroundColor(colorMode.toSitePalette().tile.match.toCssColor())
 }
 
 @Composable

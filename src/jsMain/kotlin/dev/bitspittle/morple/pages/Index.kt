@@ -9,9 +9,9 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
 import dev.bitspittle.morple.components.layout.PageLayout
-import dev.bitspittle.morple.components.widgets.game.AbsentTileStyle
-import dev.bitspittle.morple.components.widgets.game.MatchTileStyle
-import dev.bitspittle.morple.components.widgets.game.PresentTileStyle
+import dev.bitspittle.morple.components.widgets.game.AbsentTileVariant
+import dev.bitspittle.morple.components.widgets.game.MatchTileVariant
+import dev.bitspittle.morple.components.widgets.game.PresentTileVariant
 import dev.bitspittle.morple.components.widgets.game.Tile
 import dev.bitspittle.morple.data.Board
 import dev.bitspittle.morple.data.TileState
@@ -39,9 +39,9 @@ fun HomePage() {
                         (0 until Board.NUM_COLS).forEach { x ->
                             val dataTile = board[x, y]
                             Tile(dataTile.letter, variant = when (dataTile.state) {
-                                TileState.ABSENT -> AbsentTileStyle
-                                TileState.PRESENT -> PresentTileStyle
-                                TileState.MATCH -> MatchTileStyle
+                                TileState.ABSENT -> AbsentTileVariant
+                                TileState.PRESENT -> PresentTileVariant
+                                TileState.MATCH -> MatchTileVariant
                             })
                         }
                     }

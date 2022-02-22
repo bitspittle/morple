@@ -19,7 +19,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.H1
 
 val CenterColumnStyle = ComponentStyle("bs-center-column") {
-    base { Modifier.fillMaxWidth(90.percent) }
+    base { Modifier.fillMaxWidth(90.percent).fillMaxHeight() }
     Breakpoint.MD { Modifier.fillMaxWidth(80.percent) }
 }
 
@@ -33,13 +33,12 @@ fun PageLayout(title: String, description: String = "", content: @Composable Col
     Box(Modifier
         .fillMaxWidth()
         .minHeight(100.percent)
-        .styleModifier {
-            // Create a box with two rows: the main content (fills as much space as it can) and the footer (which reserves
-            // space at the bottom). "auto" means the use the height of the row. "1fr" means give the rest of the space to
-            // that row. Since this box is set to *at least* 100%, the footer will always appear at least on the bottom but
-            // can be pushed further down if the first row grows beyond the page.
-            gridTemplateRows("1fr auto")
-        }, contentAlignment = Alignment.TopCenter
+        // Create a box with two rows: the main content (fills as much space as it can) and the footer (which reserves
+        // space at the bottom). "auto" means the use the height of the row. "1fr" means give the rest of the space to
+        // that row. Since this box is set to *at least* 100%, the footer will always appear at least on the bottom but
+        // can be pushed further down if the first row grows beyond the page.
+        .gridTemplateRows("1fr auto"),
+        contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier.fillMaxSize().maxWidth(800.px).align(Alignment.TopCenter),
@@ -50,9 +49,7 @@ fun PageLayout(title: String, description: String = "", content: @Composable Col
                 content()
             }
         }
-        Footer(Modifier.styleModifier {
-            // Associate the footer with the row that will get pushed off the bottom of the page if it can't fit.
-            gridRowStart(2); gridRowEnd(3)
-        })
+        // Associate the footer with the row that will get pushed off the bottom of the page if it can't fit.
+        Footer(Modifier.gridRowStart(2).gridRowEnd(3))
     }
 }

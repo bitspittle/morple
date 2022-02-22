@@ -3,10 +3,7 @@ package dev.bitspittle.morple.components.sections
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
-import com.varabyte.kobweb.compose.foundation.layout.Arrangement
-import com.varabyte.kobweb.compose.foundation.layout.Column
-import com.varabyte.kobweb.compose.foundation.layout.Row
-import com.varabyte.kobweb.compose.foundation.layout.Spacer
+import com.varabyte.kobweb.compose.foundation.layout.*
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
@@ -34,19 +31,15 @@ val MorpleTextStyle = ComponentStyle.base("morple-text") {
         .fontWeight(FontWeight.Bold)
 }
 
-val HeaderButtonStyle = ComponentStyle.base("morple-nav-button") {
-    Modifier.margin(0.px, 10.px).backgroundColor(colorMode.toSilkPalette().background)
+val HeaderButtonStyle = ComponentStyle.base("morple-header-button") {
+    Modifier
+        .margin(0.px, 10.px).backgroundColor(colorMode.toSilkPalette().background)
 }
 
 @Composable
 fun Header() {
-    Column(HeaderStyle.toModifier()) {
-        Row(Modifier.fillMaxWidth()) {
-            Spacer()
-            ColorModeButton(HeaderButtonStyle.toModifier())
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Text("Morple", MorpleTextStyle.toModifier())
-        }
+    Box(HeaderStyle.toModifier()) {
+        Text("Morple", MorpleTextStyle.toModifier().align(Alignment.Center))
+        ColorModeButton(HeaderButtonStyle.toModifier().align(Alignment.CenterEnd))
     }
 }

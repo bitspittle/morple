@@ -5,5 +5,3 @@ enum class TileState {
     PRESENT,
     MATCH
 }
-
-class Tile(val state: TileState)

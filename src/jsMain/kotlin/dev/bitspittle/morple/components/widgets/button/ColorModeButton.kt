@@ -5,6 +5,7 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.display
 import com.varabyte.kobweb.silk.components.icons.fa.FaMoon
 import com.varabyte.kobweb.silk.components.icons.fa.FaSun
+import com.varabyte.kobweb.silk.components.icons.fa.IconStyle
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.rememberColorMode
 import org.jetbrains.compose.web.css.DisplayStyle
@@ -17,8 +18,8 @@ fun ColorModeButton(modifier: Modifier = Modifier.display(DisplayStyle.InlineBlo
         modifier
     ) {
         when (colorMode) {
-            ColorMode.LIGHT -> FaMoon()
-            ColorMode.DARK -> FaSun()
+            ColorMode.LIGHT -> FaMoon(style = IconStyle.FILLED)
+            ColorMode.DARK -> FaSun(style = IconStyle.FILLED)
         }
     }
 }

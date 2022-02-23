@@ -18,18 +18,18 @@ fun String.toEncoded(): String {
     var remaining = this
     while (remaining.isNotEmpty()) {
         val wordleSquare = ENCODED_WORDLE_MAP.keys.firstOrNull { wordleSquare -> remaining.startsWith(wordleSquare) }
-        if (wordleSquare != null) {
+        remaining = if (wordleSquare != null) {
             encoded.add(ENCODED_WORDLE_MAP.getValue(wordleSquare))
-            remaining = remaining.removePrefix(wordleSquare)
+            remaining.removePrefix(wordleSquare)
         } else {
-            remaining = remaining.drop(1)
+            remaining.drop(1)
         }
     }
 
     return encoded.joinToString("")
 }
 
-class Board(private val initialState: List<Pair<Tile, Char?>>) {
+class Board(private val initialState: List<Pair<TileState, Char?>>) {
     companion object {
         const val NUM_COLS = 5
         const val MAX_NUM_ROWS = 6
@@ -55,7 +55,7 @@ class Board(private val initialState: List<Pair<Tile, Char?>>) {
                         else -> error { "Unexpected encoded char: $c" }
                     }
                     val letter = if (part.length == 2) part.first() else null
-                    Tile(tileState) to letter
+                    tileState to letter
                 }
                 .toList()
 
@@ -66,6 +66,7 @@ class Board(private val initialState: List<Pair<Tile, Char?>>) {
     private val _tiles = initialState.map { it.first }
     private val _letters = initialState.map { it.second }.toMutableList()
     val numRows = initialState.size / NUM_COLS
+
     init {
         require(initialState.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
         require(numRows in (1..MAX_NUM_ROWS)) { "Tried to create a board without 1 to $MAX_NUM_ROWS rows" }
@@ -73,11 +74,11 @@ class Board(private val initialState: List<Pair<Tile, Char?>>) {
         _tiles.chunked(5).let { chunked ->
             chunked.forEachIndexed { y, row ->
                 if (y == chunked.lastIndex) {
-                    require(row.all { tile -> tile.state == TileState.MATCH }) {
+                    require(row.all { tileState -> tileState == TileState.MATCH }) {
                         "Tried to create a board where the final row isn't all matches"
                     }
                 } else {
-                    require(!row.all { tile -> tile.state == TileState.MATCH }) {
+                    require(!row.all { tileState -> tileState == TileState.MATCH }) {
                         "Tried to create a board where an intermediate row is all matches"
                     }
                 }
@@ -95,6 +96,16 @@ class Board(private val initialState: List<Pair<Tile, Char?>>) {
 
         actions.forEach { action ->
             letters[action.x, action.y] = action.letter
+            // If editing a match tile, set all vertical match tiles as well
+            if (tiles[action.x, action.y] == TileState.MATCH) {
+                (0 until numRows)
+                    .filter { y -> y != action.y }
+                    .forEach { y ->
+                        if (tiles[action.x, y] == TileState.MATCH) {
+                            letters[action.x, y] = action.letter
+                        }
+                    }
+            }
         }
     }
 }

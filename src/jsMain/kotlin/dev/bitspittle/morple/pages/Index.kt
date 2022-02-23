@@ -8,16 +8,15 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.layout.PageLayout
-import dev.bitspittle.morple.components.widgets.game.AbsentTileVariant
-import dev.bitspittle.morple.components.widgets.game.MatchTileVariant
-import dev.bitspittle.morple.components.widgets.game.PresentTileVariant
-import dev.bitspittle.morple.components.widgets.game.Tile
+import dev.bitspittle.morple.components.widgets.game.*
 import dev.bitspittle.morple.data.*
+import kotlinx.browser.window
+import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
-// Create "KeyA" -> 'A', etc. mapping
-private val LETTER_CODES = ('A'..'Z').associateBy { "Key$it" }
+private val LETTER_CODES = (('a' .. 'z') + ('A'..'Z')).associate { it.toString() to it.uppercaseChar() }
 
 enum class NavKey(val value: String) {
     UP("ArrowUp"),
@@ -39,10 +38,27 @@ enum class ClearKey(val value: String) {
 // Create "Backspace" -> BACKSPACE, etc. mapping
 private val CLEAR_CODES = ClearKey.values().associateBy { it.value }
 
+fun <T> MutableMap<T, Unit>.add(key: T) { this[key] = Unit }
 
 @Page
 @Composable
 fun HomePage() {
+    // "words" is a set but there's no mutableStateSetOf method
+    val words = remember { mutableStateMapOf<String, Unit>()}
+    val validator = remember { Validator() }
+    var ready by remember { mutableStateOf(false) }
+
+    var validationText by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        window.fetch("/words.txt")
+            .then { response -> response.text() }
+            .then { text ->
+                text.split("\n").forEach { words.add(it.uppercase()) }
+                ready = true
+            }
+    }
+
     val board = remember {
         Board.from(
             """
@@ -64,30 +80,30 @@ fun HomePage() {
     val lastX = Board.NUM_COLS - 1
     val lastY = board.numRows - 1
 
+    fun navUp(x: Int, y: Int) { if (y > 0) tileRefs2d[x, y - 1].focus() }
+    fun navDown(x: Int, y: Int) { if (y < lastY) tileRefs2d[x, y + 1].focus() }
+    fun navLeft(x: Int, y: Int) {
+        if (x > 0) tileRefs2d[x - 1, y].focus()
+        else if (y > 0) tileRefs2d[lastX, y - 1].focus()
+    }
+    fun navRight(x: Int, y: Int) {
+        if (x < lastX) tileRefs2d[x + 1, y].focus()
+        else if (y < lastY) tileRefs2d[0, y + 1].focus()
+    }
+    fun navHome(x: Int, y: Int) { if (x > 0) tileRefs2d[0, y].focus() }
+    fun navEnd(x: Int, y: Int) { if (x < lastX) tileRefs2d[lastX, y].focus() }
+
     PageLayout("Morple", description = "Wordle... but upside-down!") {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column {
                 (0 until board.numRows).forEach { y ->
                     Row {
                         (0 until Board.NUM_COLS).forEach { x ->
-                            val dataTile = board.tiles[x, y]
+                            val tileState = board.tiles[x, y]
                             Tile(
                                 board.letters[x, y],
                                 Modifier.onKeyDown { evt ->
-                                    fun navUp() { if (y > 0) tileRefs2d[x, y - 1].focus() }
-                                    fun navDown() { if (y < lastY) tileRefs2d[x, y + 1].focus() }
-                                    fun navLeft() {
-                                        if (x > 0) tileRefs2d[x - 1, y].focus()
-                                        else if (y > 0) tileRefs2d[lastX, y - 1].focus()
-                                    }
-                                    fun navRight() {
-                                        if (x < lastX) tileRefs2d[x + 1, y].focus()
-                                        else if (y < lastY) tileRefs2d[0, y + 1].focus()
-                                    }
-                                    fun navHome() { if (x > 0) tileRefs2d[0, y].focus() }
-                                    fun navEnd() { if (x < lastX) tileRefs2d[lastX, y].focus() }
-
-                                    LETTER_CODES[evt.code]?.let { letter ->
+                                    LETTER_CODES[evt.key]?.let { letter ->
                                         if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
                                             // Redo
                                             if (actionsRedo.isNotEmpty()) {
@@ -107,29 +123,41 @@ fun HomePage() {
                                         } else if (!evt.altKey && !evt.ctrlKey) {
                                             actionsUndo.add(Action(x, y, letter))
                                             actionsRedo.clear()
-                                            navRight()
+                                            navRight(x, y)
                                         }
-                                        Unit
+
+                                        validationText = ""
                                     }
 
                                     NAV_CODES[evt.code]?.let { navKey ->
                                         when (navKey) {
-                                            NavKey.UP -> navUp()
-                                            NavKey.DOWN -> navDown()
-                                            NavKey.LEFT -> navLeft()
-                                            NavKey.RIGHT -> navRight()
-                                            NavKey.HOME -> navHome()
-                                            NavKey.END -> navEnd()
+                                            NavKey.UP -> navUp(x, y)
+                                            NavKey.DOWN -> navDown(x, y)
+                                            NavKey.LEFT -> navLeft(x, y)
+                                            NavKey.RIGHT -> navRight(x, y)
+                                            NavKey.HOME -> navHome(x, y)
+                                            NavKey.END -> navEnd(x, y)
                                         }
                                     }
 
                                     CLEAR_CODES[evt.code]?.let {
                                         actionsUndo.add(Action(x, y, null))
                                         actionsRedo.clear()
-                                        if (it == ClearKey.BACKSPACE) navLeft()
+                                        if (it == ClearKey.BACKSPACE) navLeft(x, y)
+                                    }
+
+                                    if (evt.code == "Enter") {
+                                        validationText = buildString {
+                                            val errors = validator.validate(board, words.keys)
+                                            if (errors.isEmpty()) {
+                                                append("CONGRATULATIONS! You Won!")
+                                            } else {
+                                                errors.forEach { error -> appendLine(error.message) }
+                                            }
+                                        }
                                     }
                                 },
-                                variant = when (dataTile.state) {
+                                variant = when (tileState) {
                                     TileState.ABSENT -> AbsentTileVariant
                                     TileState.PRESENT -> PresentTileVariant
                                     TileState.MATCH -> MatchTileVariant
@@ -148,6 +176,12 @@ fun HomePage() {
                         (0 until Board.NUM_COLS).forEach { _ ->
                             Tile()
                         }
+                    }
+                }
+
+                if (validationText.isNotEmpty()) {
+                    Column {
+                        validationText.split("\n").forEach { line -> Div { Text(line) } }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package dev.bitspittle.morple.data
 sealed class Error(val message: String) {
     class MissingLetter(val x: Int, val y: Int) : Error("A letter is missing.")
     class InvalidWord(val invalidWord: String, val y: Int) : Error("\"$invalidWord\" is not an accepted word.")
+    class RepeatedWord(val repeatedWord: String, val y: Int) : Error("\"$repeatedWord\" was already used earlier.")
     class NotAbsent(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' is present in the final word")
     class NotPresent(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' is not present in the final word")
     class NotMatch(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' does not match the final solution")
@@ -30,6 +31,16 @@ class Validator {
             val word = (0 until Board.NUM_COLS).mapNotNull { x -> board.letters[x, y] }.joinToString("")
             if (word.length == Board.NUM_COLS && !words.contains(word)) {
                 errors.add(Error.InvalidWord(word, y))
+            }
+        }
+
+        // Repeated words
+        mutableSetOf<String>().let { usedWords ->
+            for (y in 0 until board.numRows) {
+                val word = (0 until Board.NUM_COLS).mapNotNull { x -> board.letters[x, y] }.joinToString("")
+                if (word.length == Board.NUM_COLS && !usedWords.add(word)) {
+                    errors.add(Error.RepeatedWord(word, y))
+                }
             }
         }
 

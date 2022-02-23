@@ -8,6 +8,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.layout.PageLayout
 import dev.bitspittle.morple.components.widgets.game.*
@@ -40,6 +41,8 @@ private val CLEAR_CODES = ClearKey.values().associateBy { it.value }
 
 fun <T> MutableMap<T, Unit>.add(key: T) { this[key] = Unit }
 
+external fun decodeURIComponent(encodedURI: String): String
+
 @Page
 @Composable
 fun HomePage() {
@@ -59,7 +62,20 @@ fun HomePage() {
             }
     }
 
+    val ctx = rememberPageContext()
     val board = remember {
+        val puzzleValue = ctx.params["puzzle"]
+
+        if (puzzleValue != null) {
+            try {
+                val puzzleValueBytes = puzzleValue.map { c -> c.code.toByte() }.toByteArray()
+                return@remember Board.from(decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
+            }
+            catch (ex: Exception) {
+                println("Skipped puzzle, could not parse it: $ex.\n\nWill choose a random one instead")
+            }
+        }
+
         Board.from(
             listOf(
             """

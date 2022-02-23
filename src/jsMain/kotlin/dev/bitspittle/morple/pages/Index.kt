@@ -246,8 +246,10 @@ fun HomePage() {
                                     }
 
                                     CLEAR_CODES[evt.code]?.let {
-                                        actionsUndo.add(Action(x, y, null))
-                                        actionsRedo.clear()
+                                        if (board.letters[x, y] != null) {
+                                            actionsUndo.add(Action(x, y, null))
+                                            actionsRedo.clear()
+                                        }
                                         if (it == ClearKey.BACKSPACE) navLeft(x, y)
                                     }
 

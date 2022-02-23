@@ -71,6 +71,7 @@ class Validator {
                 }
             }
 
+            // Now that we've removed matched characters from consideration, let's check all remaining present tiles
             for (x in 0 until Board.NUM_COLS) {
                 val letter = board.letters[x, y] ?: continue
                 if (board.tiles[x, y] == TileState.PRESENT) {

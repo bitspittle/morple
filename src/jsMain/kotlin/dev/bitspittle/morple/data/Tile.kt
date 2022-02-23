@@ -6,4 +6,4 @@ enum class TileState {
     MATCH
 }
 
-data class Tile(val state: TileState, val letter: Char?)
+class Tile(val state: TileState)

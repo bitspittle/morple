@@ -29,7 +29,7 @@ fun String.toEncoded(): String {
     return encoded.joinToString("")
 }
 
-data class Board(val tiles: List<Tile>) {
+class Board(private val initialState: List<Pair<Tile, Char?>>) {
     companion object {
         const val NUM_COLS = 5
         const val MAX_NUM_ROWS = 6
@@ -44,13 +44,6 @@ data class Board(val tiles: List<Tile>) {
          * tile's character is the letter A which is not present in the final solution.
          */
         fun from(encodedBoard: String): Board {
-            println(encodedBoard)
-            println(
-                ENCODED_PART_REGEX.findAll(encodedBoard).map { result ->
-                    result.groupValues.first()
-                }.joinToString(", ")
-            )
-
             val tiles = ENCODED_PART_REGEX.findAll(encodedBoard)
                 .map { result -> result.groupValues.first() }
                 .map { part ->
@@ -62,7 +55,7 @@ data class Board(val tiles: List<Tile>) {
                         else -> error { "Unexpected encoded char: $c" }
                     }
                     val letter = if (part.length == 2) part.first() else null
-                    Tile(tileState, letter)
+                    Tile(tileState) to letter
                 }
                 .toList()
 
@@ -70,13 +63,14 @@ data class Board(val tiles: List<Tile>) {
         }
     }
 
-    val numRows = tiles.size / NUM_COLS
-
+    private val _tiles = initialState.map { it.first }
+    private val _letters = initialState.map { it.second }.toMutableList()
+    val numRows = initialState.size / NUM_COLS
     init {
-        require(tiles.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
+        require(initialState.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
         require(numRows in (1..MAX_NUM_ROWS)) { "Tried to create a board without 1 to $MAX_NUM_ROWS rows" }
 
-        tiles.chunked(5).let { chunked ->
+        _tiles.chunked(5).let { chunked ->
             chunked.forEachIndexed { y, row ->
                 if (y == chunked.lastIndex) {
                     require(row.all { tile -> tile.state == TileState.MATCH }) {
@@ -90,7 +84,18 @@ data class Board(val tiles: List<Tile>) {
             }
         }
     }
-}
 
-operator fun Board.get(x: Int, y: Int): Tile = this.tiles[y * Board.NUM_COLS + x]
+    val tiles = List2d(_tiles, NUM_COLS)
+    val letters = MutableList2d(_letters, NUM_COLS)
+
+    fun resetLetters(actions: List<Action>) {
+        initialState
+            .map { it.second }
+            .forEachIndexed { i, c -> _letters[i] = c }
+
+        actions.forEach { action ->
+            letters[action.x, action.y] = action.letter
+        }
+    }
+}
 

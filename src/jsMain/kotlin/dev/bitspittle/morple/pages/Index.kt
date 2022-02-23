@@ -104,12 +104,10 @@ fun HomePage() {
                                                 }
                                                 actionsRedo.add(0, actionsUndo.removeLast())
                                             }
-                                        } else if (!evt.altKey && !evt.shiftKey) {
-                                            if (board.letters[x, y] != letter) {
-                                                actionsUndo.add(Action(x, y, letter))
-                                                actionsRedo.clear()
-                                                navRight()
-                                            }
+                                        } else if (!evt.altKey && !evt.ctrlKey) {
+                                            actionsUndo.add(Action(x, y, letter))
+                                            actionsRedo.clear()
+                                            navRight()
                                         }
                                         Unit
                                     }

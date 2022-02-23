@@ -58,8 +58,8 @@ fun HomePage() {
 
     board.resetLetters(actionsUndo)
 
-    val _tileRefs = mutableListOf<HTMLElement>()
-    val tileRefs = MutableList2d(_tileRefs, Board.NUM_COLS)
+    val tileRefs = mutableListOf<HTMLElement>()
+    val tileRefs2d = MutableList2d(tileRefs, Board.NUM_COLS)
 
     val lastX = Board.NUM_COLS - 1
     val lastY = board.numRows - 1
@@ -74,18 +74,18 @@ fun HomePage() {
                             Tile(
                                 board.letters[x, y],
                                 Modifier.onKeyDown { evt ->
-                                    fun navUp() { if (y > 0) tileRefs[x, y - 1].focus() }
-                                    fun navDown() { if (y < lastY) tileRefs[x, y + 1].focus() }
+                                    fun navUp() { if (y > 0) tileRefs2d[x, y - 1].focus() }
+                                    fun navDown() { if (y < lastY) tileRefs2d[x, y + 1].focus() }
                                     fun navLeft() {
-                                        if (x > 0) tileRefs[x - 1, y].focus()
-                                        else if (y > 0) tileRefs[lastX, y - 1].focus()
+                                        if (x > 0) tileRefs2d[x - 1, y].focus()
+                                        else if (y > 0) tileRefs2d[lastX, y - 1].focus()
                                     }
                                     fun navRight() {
-                                        if (x < lastX) tileRefs[x + 1, y].focus()
-                                        else if (y < lastY) tileRefs[0, y + 1].focus()
+                                        if (x < lastX) tileRefs2d[x + 1, y].focus()
+                                        else if (y < lastY) tileRefs2d[0, y + 1].focus()
                                     }
-                                    fun navHome() { if (x > 0) tileRefs[0, y].focus() }
-                                    fun navEnd() { if (x < lastX) tileRefs[lastX, y].focus() }
+                                    fun navHome() { if (x > 0) tileRefs2d[0, y].focus() }
+                                    fun navEnd() { if (x < lastX) tileRefs2d[lastX, y].focus() }
 
                                     LETTER_CODES[evt.code]?.let { letter ->
                                         if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
@@ -93,14 +93,14 @@ fun HomePage() {
                                             if (actionsRedo.isNotEmpty()) {
                                                 actionsUndo.add(actionsRedo.removeFirst())
                                                 actionsUndo.last().let { action ->
-                                                    tileRefs[action.x, action.y].focus()
+                                                    tileRefs2d[action.x, action.y].focus()
                                                 }
                                             }
                                         } else if (letter == 'Z' && !evt.altKey && !evt.shiftKey && evt.ctrlKey) {
                                             // Undo
                                             if (actionsUndo.isNotEmpty()) {
                                                 actionsUndo.last().let { action ->
-                                                    tileRefs[action.x, action.y].focus()
+                                                    tileRefs2d[action.x, action.y].focus()
                                                 }
                                                 actionsRedo.add(0, actionsUndo.removeLast())
                                             }
@@ -136,7 +136,7 @@ fun HomePage() {
                                 },
                                 elementScope = {
                                     DomSideEffect { div ->
-                                        _tileRefs.add(div)
+                                        tileRefs.add(div)
                                     }
                                 }
                             )

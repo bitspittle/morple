@@ -1,19 +1,28 @@
 package dev.bitspittle.morple.pages
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.dom.clearFocus
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
+import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
+import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
+import com.varabyte.kobweb.silk.components.forms.Button
+import com.varabyte.kobweb.silk.components.icons.fa.FaRedo
+import com.varabyte.kobweb.silk.components.icons.fa.FaUndo
+import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.layout.PageLayout
 import dev.bitspittle.morple.components.widgets.game.*
 import dev.bitspittle.morple.data.*
+import kotlinx.browser.document
 import kotlinx.browser.window
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
@@ -43,6 +52,12 @@ fun <T> MutableMap<T, Unit>.add(key: T) { this[key] = Unit }
 
 external fun decodeURIComponent(encodedURI: String): String
 
+sealed interface GameState {
+    object InProgress : GameState
+    class Errors(val errors: List<Error>) : GameState
+    object Finished : GameState
+}
+
 @Page
 @Composable
 fun HomePage() {
@@ -51,7 +66,7 @@ fun HomePage() {
     val validator = remember { Validator() }
     var ready by remember { mutableStateOf(false) }
 
-    var validationText by remember { mutableStateOf("") }
+    var gameState: GameState by remember { mutableStateOf(GameState.InProgress) }
 
     LaunchedEffect(Unit) {
         window.fetch("/words.txt")
@@ -170,6 +185,22 @@ fun HomePage() {
                 ⬛⬛⬛🟨⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
+            """
+                ⬛🟩🟩⬛⬛
+                ⬛🟩🟩⬛⬛
+                ⬛🟩🟩⬛🟩
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
+            """
+                🟩⬛🟨⬛🟨
+                ⬛🟨⬛🟨⬛
+                🟩🟨🟨🟨⬛
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
+            """
+                ⬜🟨⬜🟨🟩
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
             ).random().toEncoded()
         )
     }
@@ -201,94 +232,125 @@ fun HomePage() {
     PageLayout("Morple", description = "Wordle... but upside-down!") {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column {
-                (0 until board.numRows).forEach { y ->
-                    Row {
-                        (0 until Board.NUM_COLS).forEach { x ->
-                            val tileState = board.tiles[x, y]
-                            Tile(
-                                board.letters[x, y],
-                                Modifier.onKeyDown { evt ->
-                                    LETTER_CODES[evt.key]?.let { letter ->
-                                        if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
-                                            // Redo
-                                            if (actionsRedo.isNotEmpty()) {
-                                                actionsUndo.add(actionsRedo.removeFirst())
-                                                actionsUndo.last().let { action ->
-                                                    tileRefs2d[action.x, action.y].focus()
-                                                }
-                                            }
-                                        } else if (letter == 'Z' && !evt.altKey && !evt.shiftKey && evt.ctrlKey) {
-                                            // Undo
-                                            if (actionsUndo.isNotEmpty()) {
-                                                actionsUndo.last().let { action ->
-                                                    tileRefs2d[action.x, action.y].focus()
-                                                }
-                                                actionsRedo.add(0, actionsUndo.removeLast())
-                                            }
-                                        } else if (!evt.altKey && !evt.ctrlKey) {
-                                            actionsUndo.add(Action(x, y, letter))
-                                            actionsRedo.clear()
-                                            navRight(x, y)
-                                        }
-
-                                        validationText = ""
-                                    }
-
-                                    NAV_CODES[evt.code]?.let { navKey ->
-                                        when (navKey) {
-                                            NavKey.UP -> navUp(x, y)
-                                            NavKey.DOWN -> navDown(x, y)
-                                            NavKey.LEFT -> navLeft(x, y)
-                                            NavKey.RIGHT -> navRight(x, y)
-                                            NavKey.HOME -> navHome(x, y)
-                                            NavKey.END -> navEnd(x, y)
-                                        }
-                                    }
-
-                                    CLEAR_CODES[evt.code]?.let {
-                                        if (board.letters[x, y] != null) {
-                                            actionsUndo.add(Action(x, y, null))
-                                            actionsRedo.clear()
-                                        }
-                                        if (it == ClearKey.BACKSPACE) navLeft(x, y)
-                                    }
-
-                                    if (evt.code == "Enter") {
-                                        validationText = buildString {
-                                            val errors = validator.validate(board, words.keys)
-                                            if (errors.isEmpty()) {
-                                                append("CONGRATULATIONS! You Won!")
-                                            } else {
-                                                errors.forEach { error -> appendLine(error.message) }
-                                            }
-                                        }
-                                    }
-                                },
-                                variant = when (tileState) {
-                                    TileState.ABSENT -> AbsentTileVariant
-                                    TileState.PRESENT -> PresentTileVariant
-                                    TileState.MATCH -> MatchTileVariant
-                                },
-                                elementScope = {
-                                    DomSideEffect { div ->
-                                        tileRefs.add(div)
+//                Row(Modifier.fillMaxWidth().margin(bottom = 1.cssRem), verticalAlignment = Alignment.CenterVertically) {
+//                    FaUndo()
+//                    Spacer()
+//                    Button(onClick = { println("Clicked") }) {
+//                        Text("New Game")
+//                    }
+//                    Spacer()
+//                    FaRedo()
+//                }
+                Column(FinishedBoardStyle.toModifier().takeIf { gameState is GameState.Finished } ?: Modifier) {
+                    (0 until board.numRows).forEach { y ->
+                        Row(
+                            ErrorRowStyle.toModifier().takeIf {
+                                gameState.let { gameState -> // Convert var to local
+                                    gameState is GameState.Errors && gameState.errors.any { error ->
+                                        error is Error.Row && error.y == y
                                     }
                                 }
-                            )
-                        }
-                    }
-                }
-                (board.numRows until Board.MAX_NUM_ROWS).forEach { _ ->
-                    Row {
-                        (0 until Board.NUM_COLS).forEach { _ ->
-                            Tile()
-                        }
-                    }
-                }
+                            } ?: Modifier
+                        ) {
+                            (0 until Board.NUM_COLS).forEach { x ->
+                                val tileState = board.tiles[x, y]
+                                Tile(
+                                    board.letters[x, y],
+                                    Modifier.onKeyDown { evt ->
+                                        if (gameState == GameState.Finished) {
+                                            document.activeElement?.clearFocus()
+                                            return@onKeyDown
+                                        }
 
-                if (validationText.isNotEmpty()) {
-                    Column {
-                        validationText.split("\n").forEach { line -> Div { Text(line) } }
+                                        LETTER_CODES[evt.key]?.let { letter ->
+                                            if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
+                                                // Redo
+                                                if (actionsRedo.isNotEmpty()) {
+                                                    actionsUndo.add(actionsRedo.removeFirst())
+                                                    actionsUndo.last().let { action ->
+                                                        tileRefs2d[action.x, action.y].focus()
+                                                    }
+                                                }
+                                            } else if (letter == 'Z' && !evt.altKey && !evt.shiftKey && evt.ctrlKey) {
+                                                // Undo
+                                                if (actionsUndo.isNotEmpty()) {
+                                                    actionsUndo.last().let { action ->
+                                                        tileRefs2d[action.x, action.y].focus()
+                                                    }
+                                                    actionsRedo.add(0, actionsUndo.removeLast())
+                                                }
+                                            } else if (!evt.altKey && !evt.ctrlKey) {
+                                                actionsUndo.add(Action(x, y, letter))
+                                                actionsRedo.clear()
+                                                navRight(x, y)
+                                            }
+
+                                            gameState = GameState.InProgress
+                                        }
+
+                                        NAV_CODES[evt.code]?.let { navKey ->
+                                            when (navKey) {
+                                                NavKey.UP -> navUp(x, y)
+                                                NavKey.DOWN -> navDown(x, y)
+                                                NavKey.LEFT -> navLeft(x, y)
+                                                NavKey.RIGHT -> navRight(x, y)
+                                                NavKey.HOME -> navHome(x, y)
+                                                NavKey.END -> navEnd(x, y)
+                                            }
+                                        }
+
+                                        CLEAR_CODES[evt.code]?.let {
+                                            if (board.letters[x, y] != null) {
+                                                actionsUndo.add(Action(x, y, null))
+                                                actionsRedo.clear()
+                                            }
+                                            if (it == ClearKey.BACKSPACE) navLeft(x, y)
+                                            gameState = GameState.InProgress
+                                        }
+
+                                        if (evt.code == "Enter") {
+                                            val errors = validator.validate(board, words.keys)
+                                            if (errors.isEmpty()) {
+                                                gameState = GameState.Finished
+                                                document.activeElement?.clearFocus()
+                                            } else {
+                                                gameState = GameState.Errors(errors)
+                                            }
+                                        }
+                                    },
+                                    variant = when (tileState) {
+                                        TileState.ABSENT -> AbsentTileVariant
+                                        TileState.PRESENT -> PresentTileVariant
+                                        TileState.MATCH -> MatchTileVariant
+                                    }.then(
+                                        gameState.let { gameState -> // Convert var to local
+                                            if (gameState is GameState.Errors) {
+                                                when {
+                                                    gameState.errors.any { error ->
+                                                        error is Error.Tile && error.x == x && error.y == y
+                                                    } -> ErrorTileVariant
+                                                    else -> null
+                                                }
+                                            } else {
+                                                null
+                                            }
+                                        } ?: ComponentVariant.Empty
+                                    ),
+                                    elementScope = {
+                                        DomSideEffect { div ->
+                                            tileRefs.add(div)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    (board.numRows until Board.MAX_NUM_ROWS).forEach { _ ->
+                        Row {
+                            (0 until Board.NUM_COLS).forEach { _ ->
+                                Tile()
+                            }
+                        }
                     }
                 }
             }

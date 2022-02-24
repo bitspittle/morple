@@ -1,12 +1,15 @@
 package dev.bitspittle.morple.data
 
 sealed class Error(val message: String) {
-    class MissingLetter(val x: Int, val y: Int) : Error("A letter is missing.")
-    class InvalidWord(val invalidWord: String, val y: Int) : Error("\"$invalidWord\" is not an accepted word.")
-    class RepeatedWord(val repeatedWord: String, val y: Int) : Error("\"$repeatedWord\" was already used earlier.")
-    class NotAbsent(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' is present in the final word")
-    class NotPresent(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' is not present in the final word")
-    class NotMatch(letter: Char, val x: Int, val y: Int) : Error("The letter '$letter' does not match the final solution")
+    sealed class Tile(val x: Int, val y: Int, message: String) : Error(message)
+    sealed class Row(val y: Int, message: String) : Error(message)
+
+    class MissingLetter(x: Int, y: Int) : Tile(x, y, "A letter is missing.")
+    class InvalidWord(val invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
+    class RepeatedWord(val repeatedWord: String, y: Int) : Row(y, "\"$repeatedWord\" was already used earlier.")
+    class NotAbsent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is present in the final word")
+    class NotPresent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is not present in the final word")
+    class NotMatch(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' does not match the final solution")
 }
 
 class Validator {

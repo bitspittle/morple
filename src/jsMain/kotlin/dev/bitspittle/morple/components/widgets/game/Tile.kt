@@ -21,7 +21,7 @@ val FILLED_TILE_STYLE = Modifier
     .border("0px")
 
 private fun ComponentModifiers.addHoverFocusStates() {
-    val hovered = Modifier.outline(width = 4.px, LineStyle.Solid, colorMode.toSitePalette().tile.hovered.toCssColor())
+    val hovered = Modifier.outlineWidth(0.px)
     val focused = Modifier
         .border(width = 4.px, LineStyle.Solid, colorMode.toSitePalette().tile.focused.toCssColor())
         .outlineWidth(0.px) // Default focus has a thin black line, so disable it
@@ -56,6 +56,10 @@ val PresentTileVariant = TileStyle.addVariant("present") {
 val MatchTileVariant = TileStyle.addVariant("match") {
     base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.match.toCssColor()) }
     addHoverFocusStates()
+}
+
+val ErrorTileVariant = TileStyle.addVariantBase("error-tile") {
+    Modifier.color(colorMode.toSitePalette().error.toCssColor())
 }
 
 @Composable

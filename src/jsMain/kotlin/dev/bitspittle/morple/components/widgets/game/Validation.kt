@@ -16,7 +16,7 @@ val ValidationStyle = ComponentStyle.base("morple-validation") {
         .display(DisplayStyle.None)
 }
 
-val ShowValidationVariant = ValidationStyle.addBaseVariant("show") {
+val ShowValidationVariant = ValidationStyle.addVariantBase("show") {
     Modifier.display(DisplayStyle.Unset)
 }
 

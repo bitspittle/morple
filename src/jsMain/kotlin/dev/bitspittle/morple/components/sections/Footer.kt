@@ -6,6 +6,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
+import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.navigation.OpenLinkStrategy
@@ -14,10 +15,14 @@ import com.varabyte.kobweb.silk.components.icons.fa.FaGithub
 import com.varabyte.kobweb.silk.components.icons.fa.FaLinkedin
 import com.varabyte.kobweb.silk.components.icons.fa.FaTwitter
 import com.varabyte.kobweb.silk.components.navigation.Link
+import com.varabyte.kobweb.silk.components.navigation.LinkStyle
 import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
+import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.text.Text
 import com.varabyte.kobweb.silk.theme.SilkTheme
+import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 
 val FooterStyle = ComponentStyle.base("morple-footer") {
@@ -30,6 +35,10 @@ val FooterStyle = ComponentStyle.base("morple-footer") {
 
 val CopyrightStyle = ComponentStyle.base("morple-copyright") {
     Modifier.opacity(0.6).fontSize(0.8.cssRem)
+}
+
+val BsLinkVariant = LinkStyle.addVariantBase("bs-link") {
+    Modifier.color(colorMode.toSitePalette().bs.toCssColor())
 }
 
 @Composable
@@ -54,6 +63,7 @@ fun Footer(modifier: Modifier = Modifier) {
                 .width(12.cssRem)
                 .margin(top = 1.cssRem, bottom = 1.cssRem)
         ) {
+            Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
             FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
             FooterLink("https://github.com/bitspittle") { FaGithub() }
             FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }

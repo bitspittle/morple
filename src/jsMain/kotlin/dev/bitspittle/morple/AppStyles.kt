@@ -25,7 +25,8 @@ fun updateTheme(ctx: InitSilkContext) {
 class SitePalette(
     val finished: Color,
     val error: Color,
-    val tile: Tile
+    val tile: Tile,
+    val bs: Color,
 ) {
     class Tile(
         val border: Color,
@@ -49,7 +50,8 @@ object SitePalettes {
                 match = Color.rgb(0x6aaa64),
                 hovered = Colors.Black,
                 focused = Colors.Black,
-            )
+            ),
+            bs = Color.rgb(0x009900),
         ),
         ColorMode.DARK to SitePalette(
             finished = Colors.Gold,
@@ -61,7 +63,8 @@ object SitePalettes {
                 match = Color.rgb(0x538d4e),
                 hovered = Colors.White,
                 focused = Colors.White,
-            )
+            ),
+            bs = Color.rgb(0x04f904),
         ),
     )
 

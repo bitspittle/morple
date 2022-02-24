@@ -14,7 +14,7 @@ import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
-import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.HTMLElement
 
 val FILLED_TILE_STYLE = Modifier
     .color(Colors.White)
@@ -59,7 +59,7 @@ val MatchTileVariant = TileStyle.addVariant("match") {
 }
 
 @Composable
-fun Tile(letter: Char? = null, modifier: Modifier = Modifier, variant: ComponentVariant? = null, elementScope: (@Composable ElementScope<HTMLDivElement>.() -> Unit)? = null) {
+fun Tile(letter: Char? = null, modifier: Modifier = Modifier, variant: ComponentVariant? = null, elementScope: (@Composable ElementScope<HTMLElement>.() -> Unit)? = null) {
     val focusable = Modifier.tabIndex(0).takeIf { variant != null } ?: Modifier
     Box(TileStyle.toModifier(variant).then(modifier).then(focusable), elementScope = elementScope) {
         if (letter != null) {

@@ -1,8 +1,10 @@
 package dev.bitspittle.morple.components.widgets.game
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
+import com.varabyte.kobweb.compose.css.UserSelect
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -19,6 +21,7 @@ import org.w3c.dom.HTMLElement
 val FILLED_TILE_STYLE = Modifier
     .color(Colors.White)
     .border("0px")
+    .cursor(Cursor.Pointer)
 
 private fun ComponentModifiers.addHoverFocusStates() {
     val hovered = Modifier.outlineWidth(0.px)
@@ -40,6 +43,8 @@ val TileStyle = ComponentStyle("morple-tile") {
             .size(4.cssRem)
             .color(if (colorMode.isLight()) Colors.Black else Colors.Gray)
             .border(2.px, LineStyle.Solid, colorMode.toSitePalette().tile.border.toCssColor())
+            // Don't allow drag-highlighting tile letters!
+            .userSelect(UserSelect.None)
     }
 }
 

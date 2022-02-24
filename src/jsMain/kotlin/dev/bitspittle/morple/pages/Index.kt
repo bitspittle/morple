@@ -19,6 +19,7 @@ import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
 private val LETTER_CODES = (('a' .. 'z') + ('A'..'Z')).associate { it.toString() to it.uppercaseChar() }
+private val ROW_CODES = (1..6).associateBy { it.toString() }
 
 enum class NavKey(val value: String) {
     UP("ArrowUp"),
@@ -288,6 +289,13 @@ fun HomePage() {
                                                 NavKey.RIGHT -> navRight(x, y)
                                                 NavKey.HOME -> navHome(x, y)
                                                 NavKey.END -> navEnd(x, y)
+                                            }
+                                        }
+
+                                        ROW_CODES[evt.key]?.let { rowKey ->
+                                            val rowIndex = rowKey - 1
+                                            if (rowIndex < board.numRows) {
+                                                tileRefs2d[x, rowIndex].focus()
                                             }
                                         }
 

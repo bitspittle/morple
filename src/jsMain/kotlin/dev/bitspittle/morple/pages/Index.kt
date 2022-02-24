@@ -5,25 +5,17 @@ import com.varabyte.kobweb.compose.dom.clearFocus
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
-import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
-import com.varabyte.kobweb.silk.components.forms.Button
-import com.varabyte.kobweb.silk.components.icons.fa.FaRedo
-import com.varabyte.kobweb.silk.components.icons.fa.FaUndo
 import com.varabyte.kobweb.silk.components.style.*
-import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.layout.PageLayout
 import dev.bitspittle.morple.components.widgets.game.*
 import dev.bitspittle.morple.data.*
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
 private val LETTER_CODES = (('a' .. 'z') + ('A'..'Z')).associate { it.toString() to it.uppercaseChar() }

@@ -7,6 +7,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.Color
+import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.navigation.OpenLinkStrategy
@@ -43,31 +44,22 @@ val BsLinkVariant = LinkStyle.addVariantBase("bs-link") {
 
 @Composable
 private fun FooterLink(href: String, content: @Composable () -> Unit) {
-    Link(href, variant = UncoloredLinkVariant, openExternalLinksStrategy = OpenLinkStrategy.IN_NEW_TAB_FOREGROUND, content = content)
+    Link(href, variant = UncoloredLinkVariant.then(UndecoratedLinkVariant), openExternalLinksStrategy = OpenLinkStrategy.IN_NEW_TAB_FOREGROUND, content = content)
 }
 
 @Composable
 fun Footer(modifier: Modifier = Modifier) {
     Column(FooterStyle.toModifier().then(modifier), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(horizontalArrangement = Arrangement.Center) {
-            Text("This site is ")
-            Link("https://github.com/bitspittle/morple", "open source")
-            Text(" written using ")
-            Link("https://github.com/varabyte/kobweb", "Kobweb")
-            Text(".")
-        }
-
         Row(
             Modifier
                 .justifyContent(JustifyContent.SpaceAround)
-                .width(12.cssRem)
-                .margin(top = 1.cssRem, bottom = 1.cssRem)
+                .width(10.cssRem)
+                .margin(bottom = 0.5.cssRem)
         ) {
             Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
             FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
-            FooterLink("https://github.com/bitspittle") { FaGithub() }
+            FooterLink("https://github.com/bitspittle/morple") { FaGithub() }
             FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }
-            FooterLink("mailto:bitspittle+morple@gmail.com") { FaEnvelope() }
         }
 
         Row {

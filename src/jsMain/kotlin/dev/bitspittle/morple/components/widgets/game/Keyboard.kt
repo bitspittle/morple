@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
+import com.varabyte.kobweb.compose.css.UserSelect
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -56,10 +57,13 @@ val KeyStyle = ComponentStyle("morple-key") {
             .maxWidth(2.5.cssRem)
             .width(8.percent)
             .lineHeight(3.5.cssRem)
+            .height(3.5.cssRem)
             .justifyContent(JustifyContent.Center)
             .alignContent(AlignContent.Center)
             .textAlign(TextAlign.Center)
             .borderRadius(5.px)
+            // Don't allow drag-highlighting key letters!
+            .userSelect(UserSelect.None)
             .cursor(Cursor.Pointer)
     }
 

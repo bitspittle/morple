@@ -6,6 +6,7 @@ import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
 import com.varabyte.kobweb.compose.css.UserSelect
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
+import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -58,8 +59,6 @@ val KeyStyle = ComponentStyle("morple-key") {
             .width(8.percent)
             .lineHeight(3.5.cssRem)
             .height(3.5.cssRem)
-            .justifyContent(JustifyContent.Center)
-            .alignContent(AlignContent.Center)
             .textAlign(TextAlign.Center)
             .borderRadius(5.px)
             // Don't allow drag-highlighting key letters!
@@ -118,7 +117,9 @@ private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, onKeyPresse
         Div(KeyStyle.toModifier(ControlKeyVariant).asAttributesBuilder {
             onClick { onKeyPressed(action) }
         }) {
-            FaBackspace()
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                FaBackspace()
+            }
         }
     }
 }

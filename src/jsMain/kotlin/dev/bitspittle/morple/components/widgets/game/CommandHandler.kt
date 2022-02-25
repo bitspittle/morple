@@ -53,13 +53,11 @@ class CommandHandler(
         gameState = GameState.InProgress
     }
 
-    fun delete(moveLeft: Boolean = false) {
+    fun delete(moveLeftIfEmpty: Boolean = false) {
         // Special case handling for the very last char, since we can't move past it.
-        val isOnLastChar =
-            navigator.x == navigator.maxX && navigator.y == navigator.maxY &&
-                board.letters[navigator.x, navigator.y] != null
+        val isOnChar = board.letters[navigator.x, navigator.y] != null
 
-        if (moveLeft && !isOnLastChar) navigator.navLeft()
+        if (moveLeftIfEmpty && !isOnChar) navigator.navLeft()
         if (board.letters[navigator.x, navigator.y] != null) {
             actionsUndo.add(Action(navigator.x, navigator.y, null))
             actionsRedo.clear()

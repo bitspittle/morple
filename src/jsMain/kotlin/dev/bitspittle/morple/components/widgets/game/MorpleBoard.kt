@@ -96,7 +96,7 @@ fun MorpleBoard(
             }
 
             CLEAR_CODES[evt.code]?.let {
-                commandHandler.delete(moveLeft = it === ClearKey.BACKSPACE)
+                commandHandler.delete(moveLeftIfEmpty = it === ClearKey.BACKSPACE)
             }
 
             if (evt.code == "Enter") {

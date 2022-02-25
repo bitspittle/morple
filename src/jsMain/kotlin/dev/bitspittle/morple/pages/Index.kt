@@ -231,7 +231,7 @@ fun HomePage() {
                         when (keyAction) {
                             is KeyAction.Type -> commandHandler.type(keyAction.letter)
                             KeyAction.Submit -> commandHandler.submit()
-                            KeyAction.Backspace -> commandHandler.delete(moveLeft = true)
+                            KeyAction.Backspace -> commandHandler.delete(moveLeftIfEmpty = true)
                             KeyAction.Undo -> commandHandler.undo()
                             KeyAction.Redo -> commandHandler.redo()
                         }

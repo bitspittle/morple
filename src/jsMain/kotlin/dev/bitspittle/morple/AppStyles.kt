@@ -26,6 +26,7 @@ class SitePalette(
     val finished: Color,
     val error: Color,
     val tile: Tile,
+    val key: Key,
     val bs: Color,
 ) {
     class Tile(
@@ -35,6 +36,12 @@ class SitePalette(
         val match: Color,
         val hovered: Color,
         val focused: Color,
+        val text: Color,
+    )
+
+    class Key(
+        val bg: Color,
+        val fg: Color
     )
 }
 
@@ -50,6 +57,11 @@ object SitePalettes {
                 match = Color.rgb(0x6aaa64),
                 hovered = Colors.Black,
                 focused = Colors.Black,
+                text = Colors.White,
+            ),
+            SitePalette.Key(
+                bg = Color.rgb(0xd3d6da),
+                fg = Colors.Black,
             ),
             bs = Color.rgb(0x009900),
         ),
@@ -63,6 +75,11 @@ object SitePalettes {
                 match = Color.rgb(0x538d4e),
                 hovered = Colors.White,
                 focused = Colors.White,
+                text = Colors.White,
+            ),
+            SitePalette.Key(
+                bg = Color.rgb(0x818384),
+                fg = Colors.White,
             ),
             bs = Color.rgb(0x04f904),
         ),

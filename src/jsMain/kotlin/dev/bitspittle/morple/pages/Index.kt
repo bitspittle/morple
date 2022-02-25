@@ -15,7 +15,9 @@ import dev.bitspittle.morple.data.*
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
-fun <T> MutableMap<T, Unit>.add(key: T) { this[key] = Unit }
+fun <T> MutableMap<T, Unit>.add(key: T) {
+    this[key] = Unit
+}
 
 external fun decodeURIComponent(encodedURI: String): String
 
@@ -29,11 +31,13 @@ sealed interface GameState {
 @Composable
 fun HomePage() {
     // "words" is a set but there's no mutableStateSetOf method
-    val words = remember { mutableStateMapOf<String, Unit>()}
+    val words = remember { mutableStateMapOf<String, Unit>() }
     val validator = remember { Validator() }
     var ready by remember { mutableStateOf(false) }
 
     val mutableGameState = remember { mutableStateOf<GameState>(GameState.InProgress) }
+    val mutableActiveTile = remember { mutableStateOf(0 to 0) }
+    val mutableKeyCount = remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         window.fetch("/words.txt")
@@ -52,49 +56,48 @@ fun HomePage() {
             try {
                 val puzzleValueBytes = puzzleValue.map { c -> c.code.toByte() }.toByteArray()
                 return@remember Board.from(decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
-            }
-            catch (ex: Exception) {
+            } catch (ex: Exception) {
                 println("Skipped puzzle, could not parse it: $ex.\n\nWill choose a random one instead")
             }
         }
 
         Board.from(
             listOf(
-            """
+                """
                 ⬜🟨🟩⬜⬜
                 ⬜⬜🟩🟩⬜
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛⬛⬛🟨
                 🟩🟩⬛⬛⬛
                 ⬛⬛⬛⬛🟨
                 ⬛⬛⬛⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬜🟨⬜🟩⬜
                 ⬜⬜⬜⬜🟨
                 ⬜🟨🟩🟩⬜
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 🟨🟨🟨⬛🟨
                 🟩🟩🟨🟨⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛⬛🟩🟩
                 ⬛⬛⬛🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬜🟩⬜⬜🟩
                 🟨⬜⬜⬜⬜
                 ⬜⬜⬜🟩🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛🟨⬛🟩
                 ⬛🟨⬛⬛⬛
                 ⬛⬛🟨⬛🟩
@@ -102,49 +105,49 @@ fun HomePage() {
                 🟨⬛⬛⬛🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛⬛🟨⬛
                 ⬛⬛🟨🟨⬛
                 🟨🟨🟨🟩⬛
                 ⬛🟨⬛⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬜⬜⬜🟨🟨
                 ⬜🟨⬜🟨⬜
                 🟨🟨🟨🟩🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛⬛🟩⬛
                 🟩⬛🟨⬛🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛🟩🟩⬛🟨
                 ⬛🟩🟩🟩🟩
                 ⬛🟩🟩🟩🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛🟩🟩⬛🟩
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛⬛🟩⬛⬛
                 🟩🟨🟩⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 🟩⬜⬜⬜⬜
                 ⬜⬜🟩🟩⬜
                 ⬜🟨⬜🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛🟨⬛⬛⬛
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛🟩🟨
@@ -152,7 +155,7 @@ fun HomePage() {
                 ⬛⬛⬛🟨⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            """
+                """
                 ⬛🟩🟩⬛⬛
                 ⬛🟩🟩⬛⬛
                 ⬛🟩🟩⬛🟩
@@ -175,7 +178,26 @@ fun HomePage() {
                 ⬛🟨🟨🟨⬛
                 ⬛🟩🟩⬛🟩
                 🟩🟩🟩🟩🟩
-            """.trimIndent()
+            """.trimIndent(),
+            """
+                ⬜⬜⬜⬜⬜
+                ⬜⬜⬜🟨🟨
+                ⬜🟩🟩⬜🟩
+                ⬜🟩🟩⬜🟩
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
+            """
+                ⬛🟨⬛⬛⬛
+                ⬛🟩🟨⬛⬛
+                ⬛🟩⬛🟨⬛
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
+            """
+                ⬜🟨⬜⬜🟩
+                ⬜⬜⬜🟨⬜
+                ⬜🟩🟩⬜🟩
+                🟩🟩🟩🟩🟩
+            """.trimIndent(),
             ).random().toEncoded()
         )
     }
@@ -184,21 +206,38 @@ fun HomePage() {
     val actionsRedo = remember { mutableStateListOf<Action>() }
 
     PageLayout("Morple", description = "Wordle... but upside-down!") {
+        val tileRefs = mutableListOf<HTMLElement>()
+        val navigator = Navigator(MutableList2d(tileRefs, Board.NUM_COLS), mutableActiveTile)
+        val commandHandler =
+            CommandHandler(board, navigator, validator, words.keys, mutableGameState, mutableKeyCount, actionsUndo, actionsRedo)
+
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(Modifier.fillMaxHeight()) {
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer()
+                board.resetLetters(actionsUndo)
                 MorpleBoard(
-                    validator,
                     board,
-                    words.keys,
+                    navigator,
+                    commandHandler,
+                    tileRefs,
                     mutableGameState,
-                    actionsUndo,
-                    actionsRedo,
+                    mutableActiveTile,
+                    forceInvalidationWhenBoardChanges = { actionsUndo.firstOrNull() }
                 )
                 Spacer()
-                Keyboard(onKeyPressed = { key ->
-                    println(key)
-                })
+                Keyboard(
+                    board,
+                    onKeyPressed = { keyAction ->
+                        when (keyAction) {
+                            is KeyAction.Type -> commandHandler.type(keyAction.letter)
+                            KeyAction.Submit -> commandHandler.submit()
+                            KeyAction.Backspace -> commandHandler.delete(moveLeft = true)
+                            KeyAction.Undo -> commandHandler.undo()
+                            KeyAction.Redo -> commandHandler.redo()
+                        }
+                    },
+                    forceInvalidationWhenBoardChanges = { actionsUndo.firstOrNull() }
+                )
             }
         }
     }

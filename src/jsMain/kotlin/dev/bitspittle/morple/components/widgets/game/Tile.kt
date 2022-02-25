@@ -18,20 +18,10 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
-val FILLED_TILE_STYLE = Modifier
-    .color(Colors.White)
+private val ComponentModifiers.FILLED_TILE_STYLE get() = Modifier
+    .color(colorMode.toSitePalette().tile.text)
     .border("0px")
     .cursor(Cursor.Pointer)
-
-private fun ComponentModifiers.addHoverFocusStates() {
-    val hovered = Modifier.outlineWidth(0.px)
-    val focused = Modifier
-        .border(width = 4.px, LineStyle.Solid, colorMode.toSitePalette().tile.focused.toCssColor())
-        .outlineWidth(0.px) // Default focus has a thin black line, so disable it
-
-    focus { focused }
-    hover { hovered }
-}
 
 val TileStyle = ComponentStyle("morple-tile") {
     base {
@@ -45,26 +35,28 @@ val TileStyle = ComponentStyle("morple-tile") {
             .border(2.px, LineStyle.Solid, colorMode.toSitePalette().tile.border.toCssColor())
             // Don't allow drag-highlighting tile letters!
             .userSelect(UserSelect.None)
+            .outlineWidth(0.px) // Default focus has a thin black line, so disable it
     }
 }
 
 val AbsentTileVariant = TileStyle.addVariant("absent") {
     base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.absent.toCssColor()) }
-    addHoverFocusStates()
 }
 
 val PresentTileVariant = TileStyle.addVariant("present") {
     base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.present.toCssColor()) }
-    addHoverFocusStates()
 }
 
 val MatchTileVariant = TileStyle.addVariant("match") {
     base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.match.toCssColor()) }
-    addHoverFocusStates()
 }
 
-val ErrorTileVariant = TileStyle.addVariantBase("error-tile") {
+val ErrorTileVariant = TileStyle.addVariantBase("tile") {
     Modifier.color(colorMode.toSitePalette().error.toCssColor())
+}
+
+val FocusedTileVariant = TileStyle.addVariantBase("focused") {
+    Modifier.border(width = 4.px, LineStyle.Solid, colorMode.toSitePalette().tile.focused.toCssColor())
 }
 
 @Composable

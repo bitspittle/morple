@@ -1,8 +1,6 @@
 package dev.bitspittle.morple.components.widgets.game
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.varabyte.kobweb.compose.dom.clearFocus
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -39,6 +37,10 @@ enum class ClearKey(val value: String) {
 // Create "Backspace" -> BACKSPACE, etc. mapping
 private val CLEAR_CODES = ClearKey.values().associateBy { it.value }
 
+val BoardStyle = ComponentStyle.base("morple-board") {
+    Modifier
+}
+
 val FinishedBoardStyle = ComponentStyle.base("morple-finished-board") {
     Modifier.outline(width = 4.px, LineStyle.Double, colorMode.toSitePalette().finished.toCssColor())
 }
@@ -49,37 +51,61 @@ val ErrorRowStyle = ComponentStyle.base("morple-error-row") {
 
 @Composable
 fun MorpleBoard(
-    validator: Validator,
     board: Board,
-    words: Set<String>,
+    navigator: Navigator,
+    commandHandler: CommandHandler,
+    tileRefs: MutableList<HTMLElement>,
     mutableGameState: MutableState<GameState>,
-    actionsUndo: SnapshotStateList<Action>,
-    actionsRedo: SnapshotStateList<Action>,
+    mutableActiveTile: MutableState<Pair<Int, Int>>,
+    forceInvalidationWhenBoardChanges: () -> Unit,
 ) {
-    board.resetLetters(actionsUndo)
+    forceInvalidationWhenBoardChanges()
 
-    val tileRefs = mutableListOf<HTMLElement>()
-    val tileRefs2d = MutableList2d(tileRefs, Board.NUM_COLS)
+    val gameState by mutableGameState
+    val activeTile by mutableActiveTile
 
-    val lastX = Board.NUM_COLS - 1
-    val lastY = board.numRows - 1
+    LaunchedEffect(board) {
+        document.onkeydown = keyHandler@ { evt ->
+            if (gameState == GameState.Finished) {
+                return@keyHandler Unit
+            }
 
-    var gameState by mutableGameState
+            LETTER_CODES[evt.key]?.let { letter ->
+                if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
+                    commandHandler.redo()
+                } else if (letter == 'Z' && !evt.altKey && !evt.shiftKey && evt.ctrlKey) {
+                    commandHandler.undo()
+                } else if (!evt.altKey && !evt.ctrlKey) {
+                    commandHandler.type(letter)
+                }
+            }
 
-    fun navUp(x: Int, y: Int) { if (y > 0) tileRefs2d[x, y - 1].focus() }
-    fun navDown(x: Int, y: Int) { if (y < lastY) tileRefs2d[x, y + 1].focus() }
-    fun navLeft(x: Int, y: Int) {
-        if (x > 0) tileRefs2d[x - 1, y].focus()
-        else if (y > 0) tileRefs2d[lastX, y - 1].focus()
+            NAV_CODES[evt.code]?.let { navKey ->
+                when (navKey) {
+                    NavKey.UP -> navigator.navUp()
+                    NavKey.DOWN -> navigator.navDown()
+                    NavKey.LEFT -> navigator.navLeft()
+                    NavKey.RIGHT -> navigator.navRight()
+                    NavKey.HOME -> navigator.navHome()
+                    NavKey.END -> navigator.navEnd()
+                }
+            }
+
+            ROW_CODES[evt.key]?.let { rowKey ->
+                commandHandler.row(rowKey - 1)
+            }
+
+            CLEAR_CODES[evt.code]?.let {
+                commandHandler.delete(moveLeft = it === ClearKey.BACKSPACE)
+            }
+
+            if (evt.code == "Enter") {
+                commandHandler.submit()
+            }
+        }
     }
-    fun navRight(x: Int, y: Int) {
-        if (x < lastX) tileRefs2d[x + 1, y].focus()
-        else if (y < lastY) tileRefs2d[0, y + 1].focus()
-    }
-    fun navHome(x: Int, y: Int) { if (x > 0) tileRefs2d[0, y].focus() }
-    fun navEnd(x: Int, y: Int) { if (x < lastX) tileRefs2d[lastX, y].focus() }
 
-    Column(FinishedBoardStyle.toModifier().takeIf { gameState is GameState.Finished } ?: Modifier) {
+    Column(BoardStyle.toModifier().then(FinishedBoardStyle.toModifier().takeIf { gameState is GameState.Finished } ?: Modifier)) {
         (0 until board.numRows).forEach { y ->
             Row(
                 ErrorRowStyle.toModifier().takeIf {
@@ -94,76 +120,8 @@ fun MorpleBoard(
                     val tileState = board.tiles[x, y]
                     Tile(
                         board.letters[x, y],
-                        Modifier.onKeyDown { evt ->
-                            if (gameState == GameState.Finished) {
-                                document.activeElement?.clearFocus()
-                                return@onKeyDown
-                            }
-
-                            LETTER_CODES[evt.key]?.let { letter ->
-                                if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
-                                    // Redo
-                                    if (actionsRedo.isNotEmpty()) {
-                                        actionsUndo.add(actionsRedo.removeFirst())
-                                        actionsUndo.last().let { action ->
-                                            tileRefs2d[action.x, action.y].focus()
-                                        }
-                                    }
-                                } else if (letter == 'Z' && !evt.altKey && !evt.shiftKey && evt.ctrlKey) {
-                                    // Undo
-                                    if (actionsUndo.isNotEmpty()) {
-                                        actionsUndo.last().let { action ->
-                                            tileRefs2d[action.x, action.y].focus()
-                                        }
-                                        actionsRedo.add(0, actionsUndo.removeLast())
-                                    }
-                                } else if (!evt.altKey && !evt.ctrlKey) {
-                                    actionsUndo.add(Action(x, y, letter))
-                                    actionsRedo.clear()
-                                    navRight(x, y)
-                                }
-
-                                gameState = GameState.InProgress
-                            }
-
-                            NAV_CODES[evt.code]?.let { navKey ->
-                                when (navKey) {
-                                    NavKey.UP -> navUp(x, y)
-                                    NavKey.DOWN -> navDown(x, y)
-                                    NavKey.LEFT -> navLeft(x, y)
-                                    NavKey.RIGHT -> navRight(x, y)
-                                    NavKey.HOME -> navHome(x, y)
-                                    NavKey.END -> navEnd(x, y)
-                                }
-                            }
-
-                            ROW_CODES[evt.key]?.let { rowKey ->
-                                val rowIndex = rowKey - 1
-                                if (rowIndex < board.numRows) {
-                                    tileRefs2d[x, rowIndex].focus()
-                                }
-                            }
-
-                            CLEAR_CODES[evt.code]?.let {
-                                if (board.letters[x, y] != null) {
-                                    actionsUndo.add(Action(x, y, null))
-                                    actionsRedo.clear()
-                                }
-                                if (it == ClearKey.BACKSPACE) navLeft(x, y)
-                                gameState = GameState.InProgress
-                            }
-
-                            if (evt.code == "Enter") {
-                                val errors = validator.validate(board, words)
-                                gameState =
-                                    if (errors.isEmpty()) {
-                                        document.activeElement?.clearFocus()
-                                        GameState.Finished
-                                    } else {
-                                        gameState = GameState.Finished
-                                        GameState.Errors(errors)
-                                    }
-                            }
+                        Modifier.onClick {
+                            navigator.navTo(x, y)
                         },
                         variant = when (tileState) {
                             TileState.ABSENT -> AbsentTileVariant
@@ -182,6 +140,8 @@ fun MorpleBoard(
                                     null
                                 }
                             } ?: ComponentVariant.Empty
+                        ).then(
+                            if (x == activeTile.first && y == activeTile.second) FocusedTileVariant else ComponentVariant.Empty
                         ),
                         elementScope = {
                             DomSideEffect { div ->

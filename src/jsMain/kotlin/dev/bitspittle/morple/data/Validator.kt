@@ -2,15 +2,16 @@ package dev.bitspittle.morple.data
 
 sealed class Error(val message: String) {
     sealed class Tile(val x: Int, val y: Int, message: String) : Error(message)
+    sealed class LetterTile(val letter: Char, x: Int, y: Int, message: String) : Tile(x, y, message)
     sealed class Row(val y: Int, message: String) : Error(message)
 
-    class MissingLetter(x: Int, y: Int) : Tile(x, y, "A letter is missing.")
+    class EmptyTile(x: Int, y: Int) : Tile(x, y, "A letter is missing.")
     class InvalidWord(val invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
     class RepeatedWord(val repeatedWord: String, y: Int) : Row(y, "\"$repeatedWord\" was already used earlier.")
-    class NotAbsent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is present in the final word")
-    class RepeatedAbsent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' shows up in three (or more) absent locations")
-    class NotPresent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is not present in the final word")
-    class NotMatch(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' does not match the final solution")
+    class NotAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is present in the final word")
+    class RepeatedAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' shows up in three (or more) absent locations")
+    class NotPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is not present in the final word")
+    class NotMatch(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' does not match the final solution")
 }
 
 private const val INVALID_CHAR = '?'
@@ -23,11 +24,11 @@ class Validator {
             .map { x -> board.letters[x, board.numRows - 1] ?: INVALID_CHAR }
             .joinToString("")
 
-        // Missing letters
+        // Empty tiles
         for (y in 0 until board.numRows) {
             for (x in 0 until Board.NUM_COLS) {
                 if (board.letters[x, y] == null) {
-                    errors.add(Error.MissingLetter(x, y))
+                    errors.add(Error.EmptyTile(x, y))
                 }
             }
         }

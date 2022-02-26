@@ -132,8 +132,11 @@ fun MorpleBoard(
                                 if (gameState is GameState.Errors) {
                                     when {
                                         gameState.errors.any { error ->
-                                            error is Error.Tile && error.x == x && error.y == y
-                                        } -> ErrorTileVariant
+                                            error is Error.EmptyTile && error.x == x && error.y == y
+                                        } -> EmptyErrorTileVariant
+                                        gameState.errors.any { error ->
+                                            error is Error.LetterTile && error.x == x && error.y == y
+                                        } -> LetterErrorTileVariant
                                         else -> null
                                     }
                                 } else {

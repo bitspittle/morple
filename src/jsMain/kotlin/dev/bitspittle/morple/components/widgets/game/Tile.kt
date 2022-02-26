@@ -18,7 +18,7 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
-private val ComponentModifiers.FILLED_TILE_STYLE get() = Modifier
+private val ComponentModifier.FILLED_TILE_STYLE get() = Modifier
     .color(colorMode.toSitePalette().tile.text)
     .border("0px")
     .cursor(Cursor.Pointer)
@@ -39,20 +39,25 @@ val TileStyle = ComponentStyle("morple-tile") {
     }
 }
 
-val AbsentTileVariant = TileStyle.addVariant("absent") {
-    base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.absent.toCssColor()) }
+val AbsentTileVariant = TileStyle.addVariantBase("absent") {
+    FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.absent.toCssColor())
 }
 
-val PresentTileVariant = TileStyle.addVariant("present") {
-    base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.present.toCssColor()) }
+val PresentTileVariant = TileStyle.addVariantBase("present") {
+    FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.present.toCssColor())
 }
 
-val MatchTileVariant = TileStyle.addVariant("match") {
-    base { FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.match.toCssColor()) }
+val MatchTileVariant = TileStyle.addVariantBase("match") {
+    FILLED_TILE_STYLE.backgroundColor(colorMode.toSitePalette().tile.match.toCssColor())
 }
 
-val ErrorTileVariant = TileStyle.addVariantBase("tile") {
+val LetterErrorTileVariant = TileStyle.addVariantBase("error-letter") {
     Modifier.color(colorMode.toSitePalette().error.toCssColor())
+}
+
+// Changing the text color of empty tiles is useless... so outline them instead!
+val EmptyErrorTileVariant = TileStyle.addVariantBase("error-empty") {
+    Modifier.outline(width = 1.px, LineStyle.Solid, colorMode.toSitePalette().error.toCssColor())
 }
 
 val FocusedTileVariant = TileStyle.addVariantBase("focused") {

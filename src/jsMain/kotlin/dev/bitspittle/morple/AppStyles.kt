@@ -25,6 +25,7 @@ fun updateTheme(ctx: InitSilkContext) {
 class SitePalette(
     val finished: Color,
     val error: Color,
+    val warning: Color,
     val tile: Tile,
     val key: Key,
     val bs: Color,
@@ -50,6 +51,7 @@ object SitePalettes {
         ColorMode.LIGHT to SitePalette(
             finished = Colors.GoldenRod,
             error = Colors.Red,
+            warning = Colors.Yellow,
             SitePalette.Tile(
                 border = Color.rgb(0xd3d6da),
                 absent = Color.rgb(0x787c73),
@@ -68,6 +70,7 @@ object SitePalettes {
         ColorMode.DARK to SitePalette(
             finished = Colors.Gold,
             error = Colors.Red,
+            warning = Colors.Yellow,
             SitePalette.Tile(
                 border = Color.rgb(0x818384),
                 absent = Color.rgb(0x3a3a3c),

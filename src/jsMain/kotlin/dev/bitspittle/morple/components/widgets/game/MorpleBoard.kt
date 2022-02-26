@@ -8,7 +8,6 @@ import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.*
 import dev.bitspittle.morple.data.*
-import dev.bitspittle.morple.pages.*
 import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.document
 import org.jetbrains.compose.web.css.*
@@ -51,12 +50,15 @@ val ErrorRowStyle = ComponentStyle.base("morple-error-row") {
 
 @Composable
 fun MorpleBoard(
+    gameSettings: GameSettings,
     board: Board,
     navigator: Navigator,
     commandHandler: CommandHandler,
     tileRefs: MutableList<HTMLElement>,
     mutableGameState: MutableState<GameState>,
     mutableActiveTile: MutableState<Pair<Int, Int>>,
+    errors: List<GameError>,
+    showErrors: Boolean,
     forceInvalidationWhenBoardChanges: () -> Unit,
 ) {
     forceInvalidationWhenBoardChanges()
@@ -109,11 +111,7 @@ fun MorpleBoard(
         (0 until board.numRows).forEach { y ->
             Row(
                 ErrorRowStyle.toModifier().takeIf {
-                    gameState.let { gameState -> // Convert var to local
-                        gameState is GameState.Errors && gameState.errors.any { error ->
-                            error is Error.Row && error.y == y
-                        }
-                    }
+                    showErrors && errors.any { error -> error is GameError.Row && error.y == y }
                 } ?: Modifier
             ) {
                 (0 until Board.NUM_COLS).forEach { x ->
@@ -128,17 +126,26 @@ fun MorpleBoard(
                             TileState.PRESENT -> PresentTileVariant
                             TileState.MATCH -> MatchTileVariant
                         }.then(
-                            (gameState as? GameState.Errors)?.errors?.let { errors ->
+                            if (errors.any { error ->
+                                    error is GameError.RepeatedAbsent && error.x == x && error.y == y
+                                }) {
+                                LetterWarningTileVariant
+                            }
+                            else if (showErrors) {
                                 when {
-                                    errors.any { error ->
-                                        error is Error.EmptyTile && error.x == x && error.y == y
+                                    // Showing all empty tiles is way too noisy in "showErrorsInstantly" mode
+                                    !gameSettings.showErrorsInstantly && errors.any { error ->
+                                        error is GameError.EmptyTile && error.x == x && error.y == y
                                     } -> EmptyErrorTileVariant
                                     errors.any { error ->
-                                        error is Error.LetterTile && error.x == x && error.y == y
+                                        error is GameError.LetterTile && error.x == x && error.y == y
                                     } -> LetterErrorTileVariant
-                                    else -> null
+                                    else -> ComponentVariant.Empty
                                 }
-                            } ?: ComponentVariant.Empty
+                            }
+                            else {
+                                ComponentVariant.Empty
+                            }
                         ).then(
                             if (gameState != GameState.Finished && x == activeTile.first && y == activeTile.second) FocusedTileVariant else ComponentVariant.Empty
                         ),

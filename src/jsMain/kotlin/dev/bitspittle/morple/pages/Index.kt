@@ -21,12 +21,6 @@ fun <T> MutableMap<T, Unit>.add(key: T) {
 
 external fun decodeURIComponent(encodedURI: String): String
 
-sealed interface GameState {
-    object InProgress : GameState
-    class Errors(val errors: List<Error>) : GameState
-    object Finished : GameState
-}
-
 @Page
 @Composable
 fun HomePage() {
@@ -35,9 +29,11 @@ fun HomePage() {
     val validator = remember { Validator() }
     var ready by remember { mutableStateOf(false) }
 
-    val mutableGameState = remember { mutableStateOf<GameState>(GameState.InProgress) }
+    val mutableGameState = remember { mutableStateOf<GameState>(GameState.Normal) }
     val mutableActiveTile = remember { mutableStateOf(0 to 0) }
     val mutableKeyCount = remember { mutableStateOf(0) }
+    val mutableErrors = remember { mutableStateListOf<GameError>() }
+    val mutableShowErrors = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         window.fetch("/words.txt")
@@ -49,55 +45,65 @@ fun HomePage() {
     }
 
     val ctx = rememberPageContext()
+
+    val gameSettings = remember {
+        val gameMode = try {
+            ctx.params["mode"]?.let { GameMode.valueOf(it.uppercase()) } ?: GameMode.EASY
+        } catch (ex: Exception) {
+            GameMode.EASY
+        }
+
+        GameSettings.from(gameMode)
+    }
+
     val board = remember {
         val puzzleValue = ctx.params["puzzle"]
 
         if (puzzleValue != null) {
             try {
                 val puzzleValueBytes = puzzleValue.map { c -> c.code.toByte() }.toByteArray()
-                return@remember Board.from(decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
+                return@remember Board.from(gameSettings, decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
             } catch (ex: Exception) {
                 println("Skipped puzzle, could not parse it: $ex.\n\nWill choose a random one instead")
             }
         }
 
-        Board.from(
-            listOf(
-                """
+        val sampleBoards = listOf(
+            """
                 ⬜🟨🟩⬜⬜
                 ⬜⬜🟩🟩⬜
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛⬛⬛🟨
                 🟩🟩⬛⬛⬛
                 ⬛⬛⬛⬛🟨
                 ⬛⬛⬛⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬜🟨⬜🟩⬜
                 ⬜⬜⬜⬜🟨
                 ⬜🟨🟩🟩⬜
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 🟨🟨🟨⬛🟨
                 🟩🟩🟨🟨⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛⬛🟩🟩
                 ⬛⬛⬛🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬜🟩⬜⬜🟩
                 🟨⬜⬜⬜⬜
                 ⬜⬜⬜🟩🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛🟨⬛🟩
                 ⬛🟨⬛⬛⬛
                 ⬛⬛🟨⬛🟩
@@ -105,49 +111,49 @@ fun HomePage() {
                 🟨⬛⬛⬛🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛⬛🟨⬛
                 ⬛⬛🟨🟨⬛
                 🟨🟨🟨🟩⬛
                 ⬛🟨⬛⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬜⬜⬜🟨🟨
                 ⬜🟨⬜🟨⬜
                 🟨🟨🟨🟩🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛⬛🟩⬛
                 🟩⬛🟨⬛🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛🟩🟩⬛🟨
                 ⬛🟩🟩🟩🟩
                 ⬛🟩🟩🟩🟩
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛🟩🟩⬛🟩
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛⬛🟩⬛⬛
                 🟩🟨🟩⬛⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 🟩⬜⬜⬜⬜
                 ⬜⬜🟩🟩⬜
                 ⬜🟨⬜🟨🟨
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛🟨⬛⬛⬛
                 ⬛⬛⬛⬛⬛
                 ⬛⬛⬛🟩🟨
@@ -155,7 +161,7 @@ fun HomePage() {
                 ⬛⬛⬛🟨⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-                """
+            """
                 ⬛🟩🟩⬛⬛
                 ⬛🟩🟩⬛⬛
                 ⬛🟩🟩⬛🟩
@@ -200,13 +206,6 @@ fun HomePage() {
             """.trimIndent(),
             """
                 ⬛⬛⬛⬛⬛
-                ⬛⬛🟨⬛⬛
-                ⬛🟩⬛⬛⬛
-                ⬛⬛⬛⬛🟩
-                ⬛⬛⬛⬛⬛
-            """.trimIndent(),
-            """
-                ⬛⬛⬛⬛⬛
                 ⬛⬛⬛🟩⬛
                 ⬛⬛⬛⬛⬛
                 ⬛🟩🟩🟩⬛
@@ -234,7 +233,11 @@ fun HomePage() {
                 🟨🟩⬛🟩⬛
                 🟩🟩🟩🟩🟩
             """.trimIndent(),
-            ).random().toEncoded()
+        )
+
+        Board.from(
+            gameSettings,
+            sampleBoards.random().toEncoded()
         )
     }
 
@@ -245,23 +248,38 @@ fun HomePage() {
         val tileRefs = mutableListOf<HTMLElement>()
         val navigator = Navigator(MutableList2d(tileRefs, Board.NUM_COLS), mutableActiveTile)
         val commandHandler =
-            CommandHandler(board, navigator, validator, words.keys, mutableGameState, mutableKeyCount, actionsUndo, actionsRedo)
+            CommandHandler(
+                gameSettings,
+                board,
+                navigator,
+                validator,
+                words.keys,
+                mutableGameState,
+                mutableKeyCount,
+                actionsUndo,
+                actionsRedo,
+                mutableErrors,
+                mutableShowErrors
+            )
 
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer()
-                board.resetLetters(actionsUndo)
                 MorpleBoard(
+                    gameSettings,
                     board,
                     navigator,
                     commandHandler,
                     tileRefs,
                     mutableGameState,
                     mutableActiveTile,
-                    forceInvalidationWhenBoardChanges = { actionsUndo.firstOrNull() }
+                    mutableErrors,
+                    mutableShowErrors.value,
+                    forceInvalidationWhenBoardChanges = { actionsUndo.firstOrNull() },
                 )
                 Spacer()
                 Keyboard(
+                    gameSettings,
                     board,
                     onKeyPressed = keyHandler@ { keyAction ->
                         if (mutableGameState.value == GameState.Finished) return@keyHandler

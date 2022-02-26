@@ -1,9 +1,9 @@
 package dev.bitspittle.morple.data
 
-sealed class Error(val message: String) {
-    sealed class Tile(val x: Int, val y: Int, message: String) : Error(message)
+sealed class GameError(val message: String) {
+    sealed class Tile(val x: Int, val y: Int, message: String) : GameError(message)
     sealed class LetterTile(val letter: Char, x: Int, y: Int, message: String) : Tile(x, y, message)
-    sealed class Row(val y: Int, message: String) : Error(message)
+    sealed class Row(val y: Int, message: String) : GameError(message)
 
     class EmptyTile(x: Int, y: Int) : Tile(x, y, "A letter is missing.")
     class InvalidWord(val invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
@@ -17,8 +17,8 @@ sealed class Error(val message: String) {
 private const val INVALID_CHAR = '?'
 
 class Validator {
-    fun validate(board: Board, words: Set<String>): List<Error> {
-        val errors = mutableListOf<Error>()
+    fun validate(gameSettings: GameSettings, board: Board, words: Set<String>): List<GameError> {
+        val errors = mutableListOf<GameError>()
 
         val finalWord = (0 until Board.NUM_COLS)
             .map { x -> board.letters[x, board.numRows - 1] ?: INVALID_CHAR }
@@ -28,7 +28,7 @@ class Validator {
         for (y in 0 until board.numRows) {
             for (x in 0 until Board.NUM_COLS) {
                 if (board.letters[x, y] == null) {
-                    errors.add(Error.EmptyTile(x, y))
+                    errors.add(GameError.EmptyTile(x, y))
                 }
             }
         }
@@ -37,7 +37,7 @@ class Validator {
         for (y in 0 until board.numRows) {
             val word = (0 until Board.NUM_COLS).mapNotNull { x -> board.letters[x, y] }.joinToString("")
             if (word.length == Board.NUM_COLS && !words.contains(word)) {
-                errors.add(Error.InvalidWord(word, y))
+                errors.add(GameError.InvalidWord(word, y))
             }
         }
 
@@ -46,7 +46,7 @@ class Validator {
             for (y in 0 until board.numRows) {
                 val word = (0 until Board.NUM_COLS).mapNotNull { x -> board.letters[x, y] }.joinToString("")
                 if (word.length == Board.NUM_COLS && !usedWords.add(word)) {
-                    errors.add(Error.RepeatedWord(word, y))
+                    errors.add(GameError.RepeatedWord(word, y))
                 }
             }
         }
@@ -58,10 +58,22 @@ class Validator {
                 for (x in 0 until Board.NUM_COLS) {
                     val letter = board.letters[x, y] ?: continue
                     if (board.tiles[x, y] == TileState.ABSENT) {
-                        val count = usedAbsentChars.getOrPut(letter) { 0 } + 1
-                        usedAbsentChars[letter] = count
-                        if (count > 2) {
-                            errors.add(Error.RepeatedAbsent(letter, x, y))
+                        usedAbsentChars[letter] = usedAbsentChars.getOrPut(letter) { 0 } + 1
+                    }
+                }
+            }
+
+            val totalAbsentCharacters = usedAbsentChars.values.sum()
+            val repeatedAbsentCharacters = usedAbsentChars.values.sumOf { it - 1 }
+
+            if ((repeatedAbsentCharacters / totalAbsentCharacters.toFloat()) > gameSettings.maxAbsentRepetitionPercent) {
+                usedAbsentChars.filter { it.value > 1 }.keys.forEach { overusedLetter ->
+                    for (y in 0 until board.numRows - 1) {
+                        for (x in 0 until Board.NUM_COLS) {
+                            val letter = board.letters[x, y] ?: continue
+                            if (board.tiles[x, y] == TileState.ABSENT && letter == overusedLetter) {
+                                errors.add(GameError.RepeatedAbsent(letter, x, y))
+                            }
                         }
                     }
                 }
@@ -79,7 +91,7 @@ class Validator {
                 val letter = board.letters[x, y] ?: continue
                 if (board.tiles[x, y] == TileState.MATCH) {
                     if (letter != mutableFinalWord[x]) {
-                        errors.add(Error.NotMatch(letter, x, y))
+                        errors.add(GameError.NotMatch(letter, x, y))
                     }
                     else {
                         // Remove the letter so it won't be reused by following checks
@@ -98,7 +110,7 @@ class Validator {
                         mutableFinalWord[foundIndex] = INVALID_CHAR
                     }
                     else {
-                        errors.add(Error.NotPresent(letter, x, y))
+                        errors.add(GameError.NotPresent(letter, x, y))
                     }
                 }
             }
@@ -110,7 +122,7 @@ class Validator {
                 if (board.tiles[x, y] == TileState.ABSENT) {
                     val foundIndex = mutableFinalWord.indexOf(letter)
                     if (foundIndex >= 0) {
-                        errors.add(Error.NotAbsent(letter, x, y))
+                        errors.add(GameError.NotAbsent(letter, x, y))
                     }
                 }
             }

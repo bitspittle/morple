@@ -17,6 +17,7 @@ import com.varabyte.kobweb.silk.components.icons.fa.FaBackspace
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import dev.bitspittle.morple.data.Board
+import dev.bitspittle.morple.data.GameSettings
 import dev.bitspittle.morple.data.TileState
 import dev.bitspittle.morple.data.forEachIndexed
 import dev.bitspittle.morple.toSitePalette
@@ -96,8 +97,12 @@ val DisabledButtonStyle = ComponentStyle.base("morple-button-disabled") {
     Modifier.opacity(50.percent)
 }
 
+val HiddenStyle = ComponentStyle.base("morple-hidden") {
+    Modifier.opacity(0.percent)
+}
+
 @Composable
-private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
+private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, autoSubmit: Boolean, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
             TileState.ABSENT -> AbsentKeyVariant
@@ -114,11 +119,10 @@ private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, boardFilled
     } else if (action is KeyAction.Submit) {
         Div(
             KeyStyle.toModifier(ControlKeyVariant)
-                .then(DisabledButtonStyle.takeUnless { boardFilled }?.toModifier() ?: Modifier)
-                .asAttributesBuilder {
-                    onClick { onKeyPressed(action) }
-                }) {
-            Text("SUBMIT")
+                .then(DisabledButtonStyle.takeIf { autoSubmit || !boardFilled }?.toModifier() ?: Modifier)
+                .then(Modifier.onClick { if (!autoSubmit) onKeyPressed(action) })
+                .asAttributesBuilder()) {
+            Text("CHECK")
         }
     } else if (action is KeyAction.Backspace) {
         Div(KeyStyle.toModifier(ControlKeyVariant).asAttributesBuilder {
@@ -133,6 +137,7 @@ private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, boardFilled
 
 @Composable
 fun Keyboard(
+    gameSettings: GameSettings,
     board: Board,
     onKeyPressed: (KeyAction) -> Unit,
     forceInvalidationWhenBoardChanges: () -> Unit,
@@ -159,12 +164,11 @@ fun Keyboard(
         }
     }
 
-    val boardFilled = board.letters.list1d.all { it != null }
     Column(KeyboardStyle.toModifier(), horizontalAlignment = Alignment.CenterHorizontally) {
         KEYBOARD_LAYOUT.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 row.forEach { keyAction ->
-                    Key(tileStates, keyAction, boardFilled, onKeyPressed)
+                    Key(tileStates, keyAction, gameSettings.showErrorsInstantly, board.isFilled, onKeyPressed)
                 }
             }
         }

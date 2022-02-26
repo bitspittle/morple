@@ -1,12 +1,10 @@
 package dev.bitspittle.morple.components.widgets.game
 
 import androidx.compose.runtime.*
-import dev.bitspittle.morple.data.Action
-import dev.bitspittle.morple.data.Board
-import dev.bitspittle.morple.data.Validator
-import dev.bitspittle.morple.pages.GameState
+import dev.bitspittle.morple.data.*
 
 class CommandHandler(
+    private val gameSettings: GameSettings,
     private val board: Board,
     private val navigator: Navigator,
     private val validator: Validator,
@@ -15,12 +13,22 @@ class CommandHandler(
     mutableKeyCount: MutableState<Int>,
     private val actionsUndo: MutableList<Action>,
     private val actionsRedo: MutableList<Action>,
+    private val mutableErrors: MutableList<GameError>,
+    private val mutableShowErrors: MutableState<Boolean>
 ) {
     private var gameState by mutableGameState
     private var keyCount by mutableKeyCount
 
     private fun checkValidState() {
         check(gameState != GameState.Finished)
+    }
+
+    private fun updateBoardAndErrors() {
+        board.resetLetters(actionsUndo)
+        mutableErrors.clear()
+        mutableErrors.addAll(validator.validate(gameSettings, board, words))
+
+        mutableShowErrors.value = gameSettings.showErrorsInstantly && mutableErrors.isNotEmpty()
     }
 
     fun undo() {
@@ -33,7 +41,7 @@ class CommandHandler(
             actionsRedo.add(0, actionsUndo.removeLast())
         }
 
-        gameState = GameState.InProgress
+        updateBoardAndErrors()
     }
 
     fun redo() {
@@ -46,7 +54,7 @@ class CommandHandler(
             }
         }
 
-        gameState = GameState.InProgress
+        updateBoardAndErrors()
     }
 
     fun type(letter: Char) {
@@ -60,7 +68,13 @@ class CommandHandler(
         actionsRedo.clear()
         navigator.navRight()
 
-        gameState = GameState.InProgress
+        updateBoardAndErrors()
+
+        if (gameSettings.showErrorsInstantly && board.isFilled) {
+            // There's no need to manually submit if "showErrorsInstantly" is true
+            // The user already knows if they already have errors or not
+            submit(update = false)
+        }
     }
 
     fun delete(moveLeftIfEmpty: Boolean = false) {
@@ -75,7 +89,7 @@ class CommandHandler(
             actionsRedo.clear()
         }
 
-        gameState = GameState.InProgress
+        updateBoardAndErrors()
     }
 
     fun row(rowIndex: Int) {
@@ -86,10 +100,17 @@ class CommandHandler(
         }
     }
 
-    fun submit() {
+    fun submit(update: Boolean = true) {
         checkValidState()
 
-        val errors = validator.validate(board, words)
-        gameState = if (errors.isEmpty()) GameState.Finished else GameState.Errors(errors)
+        if (update) {
+            updateBoardAndErrors()
+        }
+
+        if (mutableErrors.isEmpty()) {
+            gameState = GameState.Finished
+        } else {
+            mutableShowErrors.value = true
+        }
     }
 }

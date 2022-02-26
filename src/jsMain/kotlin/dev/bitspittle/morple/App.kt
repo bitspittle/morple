@@ -19,7 +19,7 @@ fun MorpleApp(content: @Composable () -> Unit) {
             localStorage.setItem(COLOR_MODE_KEY, colorMode.name)
         }
 
-        Surface(Modifier.minWidth(400.px).minHeight(100.vh)) {
+        Surface(Modifier.minWidth(375.px).minHeight(100.vh)) {
             content()
         }
     }

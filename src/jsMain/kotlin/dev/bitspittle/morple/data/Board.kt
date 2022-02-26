@@ -29,7 +29,7 @@ fun String.toEncoded(): String {
     return encoded.joinToString("")
 }
 
-class Board(private val initialState: List<Pair<TileState, Char?>>) {
+class Board(private val gameSettings: GameSettings, private val initialState: List<Pair<TileState, Char?>>) {
     companion object {
         const val NUM_COLS = 5
         const val MAX_NUM_ROWS = 6
@@ -43,7 +43,7 @@ class Board(private val initialState: List<Pair<TileState, Char?>>) {
          * If a letter (A-Z) is specified, then the character following it represents its state, e.g. "A-" means this
          * tile's character is the letter A which is not present in the final solution.
          */
-        fun from(encodedBoard: String): Board {
+        fun from(gameSettings: GameSettings, encodedBoard: String): Board {
             val tiles = ENCODED_PART_REGEX.findAll(encodedBoard)
                 .map { result -> result.groupValues.first() }
                 .map { part ->
@@ -59,13 +59,16 @@ class Board(private val initialState: List<Pair<TileState, Char?>>) {
                 }
                 .toList()
 
-            return Board(tiles)
+            return Board(gameSettings, tiles)
         }
     }
 
     private val _tiles = initialState.map { it.first }
     private val _letters = initialState.map { it.second }.toMutableList()
     val numRows = initialState.size / NUM_COLS
+
+    var isFilled: Boolean = false
+        private set
 
     init {
         require(initialState.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
@@ -96,17 +99,22 @@ class Board(private val initialState: List<Pair<TileState, Char?>>) {
 
         actions.forEach { action ->
             letters[action.x, action.y] = action.letter
-            // If editing a match tile, set all vertical match tiles as well
-            if (tiles[action.x, action.y] == TileState.MATCH) {
-                (0 until numRows)
-                    .filter { y -> y != action.y }
-                    .forEach { y ->
-                        if (tiles[action.x, y] == TileState.MATCH) {
-                            letters[action.x, y] = action.letter
+
+            if (gameSettings.autoFillMatchColumns) {
+                // If editing a match tile, set all vertical match tiles as well
+                if (tiles[action.x, action.y] == TileState.MATCH) {
+                    (0 until numRows)
+                        .filter { y -> y != action.y }
+                        .forEach { y ->
+                            if (tiles[action.x, y] == TileState.MATCH) {
+                                letters[action.x, y] = action.letter
+                            }
                         }
-                    }
+                }
             }
         }
+
+        isFilled = letters.list1d.all { it != null }
     }
 }
 

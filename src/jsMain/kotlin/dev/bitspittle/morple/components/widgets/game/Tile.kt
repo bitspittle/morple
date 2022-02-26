@@ -55,6 +55,10 @@ val LetterErrorTileVariant = TileStyle.addVariantBase("error-letter") {
     Modifier.color(colorMode.toSitePalette().error.toCssColor())
 }
 
+val LetterWarningTileVariant = TileStyle.addVariantBase("warn-letter") {
+    Modifier.color(colorMode.toSitePalette().warning.toCssColor())
+}
+
 // Changing the text color of empty tiles is useless... so outline them instead!
 val EmptyErrorTileVariant = TileStyle.addVariantBase("error-empty") {
     Modifier.outline(width = 1.px, LineStyle.Solid, colorMode.toSitePalette().error.toCssColor())

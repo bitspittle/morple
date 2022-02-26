@@ -11,13 +11,16 @@ import com.varabyte.kobweb.navigation.OpenLinkStrategy
 import com.varabyte.kobweb.silk.components.icons.fa.FaGithub
 import com.varabyte.kobweb.silk.components.icons.fa.FaLinkedin
 import com.varabyte.kobweb.silk.components.icons.fa.FaTwitter
+import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIf
 import com.varabyte.kobweb.silk.components.navigation.Link
 import com.varabyte.kobweb.silk.components.navigation.LinkStyle
 import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
 import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.style.*
+import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.text.Text
 import com.varabyte.kobweb.silk.theme.SilkTheme
+import com.varabyte.kobweb.silk.theme.rememberBreakpoint
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 
@@ -45,17 +48,21 @@ private fun FooterLink(href: String, content: @Composable () -> Unit) {
 @Composable
 fun Footer(modifier: Modifier = Modifier) {
     Column(FooterStyle.toModifier().then(modifier), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(
-            Modifier
-                .justifyContent(JustifyContent.SpaceAround)
-                .width(10.cssRem)
-                .margin(bottom = 0.5.cssRem),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
-            FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
-            FooterLink("https://github.com/bitspittle/morple") { FaGithub() }
-            FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }
+        val bp by rememberBreakpoint()
+
+        if (bp >= Breakpoint.MD) {
+            Row(
+                Modifier
+                    .justifyContent(JustifyContent.SpaceAround)
+                    .width(10.cssRem)
+                    .margin(bottom = 0.5.cssRem),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
+                FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
+                FooterLink("https://github.com/bitspittle/morple") { FaGithub() }
+                FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }
+            }
         }
 
         Row {

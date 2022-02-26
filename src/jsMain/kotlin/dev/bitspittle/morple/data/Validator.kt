@@ -8,6 +8,7 @@ sealed class Error(val message: String) {
     class InvalidWord(val invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
     class RepeatedWord(val repeatedWord: String, y: Int) : Row(y, "\"$repeatedWord\" was already used earlier.")
     class NotAbsent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is present in the final word")
+    class RepeatedAbsent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' shows up in three (or more) absent locations")
     class NotPresent(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' is not present in the final word")
     class NotMatch(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' does not match the final solution")
 }
@@ -43,6 +44,22 @@ class Validator {
                 val word = (0 until Board.NUM_COLS).mapNotNull { x -> board.letters[x, y] }.joinToString("")
                 if (word.length == Board.NUM_COLS && !usedWords.add(word)) {
                     errors.add(Error.RepeatedWord(word, y))
+                }
+            }
+        }
+
+        // Repeated absent characters
+        mutableMapOf<Char, Int>().let { usedAbsentChars ->
+            for (y in 0 until board.numRows) {
+                for (x in 0 until Board.NUM_COLS) {
+                    val letter = board.letters[x, y] ?: continue
+                    if (board.tiles[x, y] == TileState.ABSENT) {
+                        val count = usedAbsentChars.getOrPut(letter) { 0 } + 1
+                        usedAbsentChars[letter] = count
+                        if (count > 2) {
+                            errors.add(Error.RepeatedAbsent(letter, x, y))
+                        }
+                    }
                 }
             }
         }

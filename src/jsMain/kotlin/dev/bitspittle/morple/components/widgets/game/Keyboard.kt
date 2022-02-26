@@ -92,8 +92,12 @@ val MatchKeyVariant = KeyStyle.addVariantBase("match") {
         .backgroundColor(colorMode.toSitePalette().tile.match)
 }
 
+val DisabledButtonStyle = ComponentStyle.base("morple-button-disabled") {
+    Modifier.opacity(50.percent)
+}
+
 @Composable
-private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, onKeyPressed: (KeyAction) -> Unit) {
+private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
             TileState.ABSENT -> AbsentKeyVariant
@@ -108,10 +112,13 @@ private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, onKeyPresse
             Text(action.letter.toString())
         }
     } else if (action is KeyAction.Submit) {
-        Div(KeyStyle.toModifier(ControlKeyVariant).asAttributesBuilder {
-            onClick { onKeyPressed(action) }
-        }) {
-            Text("ENTER")
+        Div(
+            KeyStyle.toModifier(ControlKeyVariant)
+                .then(DisabledButtonStyle.takeUnless { boardFilled }?.toModifier() ?: Modifier)
+                .asAttributesBuilder {
+                    onClick { onKeyPressed(action) }
+                }) {
+            Text("SUBMIT")
         }
     } else if (action is KeyAction.Backspace) {
         Div(KeyStyle.toModifier(ControlKeyVariant).asAttributesBuilder {
@@ -152,11 +159,12 @@ fun Keyboard(
         }
     }
 
+    val boardFilled = board.letters.list1d.all { it != null }
     Column(KeyboardStyle.toModifier(), horizontalAlignment = Alignment.CenterHorizontally) {
         KEYBOARD_LAYOUT.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 row.forEach { keyAction ->
-                    Key(tileStates, keyAction, onKeyPressed)
+                    Key(tileStates, keyAction, boardFilled, onKeyPressed)
                 }
             }
         }

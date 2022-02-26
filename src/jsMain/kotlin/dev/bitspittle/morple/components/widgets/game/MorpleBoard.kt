@@ -141,7 +141,7 @@ fun MorpleBoard(
                                 }
                             } ?: ComponentVariant.Empty
                         ).then(
-                            if (x == activeTile.first && y == activeTile.second) FocusedTileVariant else ComponentVariant.Empty
+                            if (gameState != GameState.Finished && x == activeTile.first && y == activeTile.second) FocusedTileVariant else ComponentVariant.Empty
                         ),
                         elementScope = {
                             DomSideEffect { div ->

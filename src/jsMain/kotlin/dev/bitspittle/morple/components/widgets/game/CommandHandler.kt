@@ -19,7 +19,13 @@ class CommandHandler(
     private var gameState by mutableGameState
     private var keyCount by mutableKeyCount
 
+    private fun checkValidState() {
+        check(gameState != GameState.Finished)
+    }
+
     fun undo() {
+        checkValidState()
+
         if (actionsUndo.isNotEmpty()) {
             actionsUndo.last().let { action ->
                 navigator.navTo(action.x, action.y)
@@ -31,6 +37,8 @@ class CommandHandler(
     }
 
     fun redo() {
+        checkValidState()
+
         if (actionsRedo.isNotEmpty()) {
             actionsUndo.add(actionsRedo.removeFirst())
             actionsUndo.last().let { action ->
@@ -42,6 +50,8 @@ class CommandHandler(
     }
 
     fun type(letter: Char) {
+        checkValidState()
+
         if (board.letters[navigator.x, navigator.y] != letter) {
             keyCount++
         }
@@ -54,6 +64,8 @@ class CommandHandler(
     }
 
     fun delete(moveLeftIfEmpty: Boolean = false) {
+        checkValidState()
+
         // Special case handling for the very last char, since we can't move past it.
         val isOnChar = board.letters[navigator.x, navigator.y] != null
 
@@ -67,12 +79,16 @@ class CommandHandler(
     }
 
     fun row(rowIndex: Int) {
+        checkValidState()
+
         if (rowIndex < board.numRows) {
             navigator.navTo(navigator.x, rowIndex)
         }
     }
 
     fun submit() {
+        checkValidState()
+
         val errors = validator.validate(board, words)
         gameState = if (errors.isEmpty()) GameState.Finished else GameState.Errors(errors)
     }

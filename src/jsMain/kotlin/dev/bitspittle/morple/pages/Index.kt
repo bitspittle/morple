@@ -227,7 +227,9 @@ fun HomePage() {
                 Spacer()
                 Keyboard(
                     board,
-                    onKeyPressed = { keyAction ->
+                    onKeyPressed = keyHandler@ { keyAction ->
+                        if (mutableGameState.value == GameState.Finished) return@keyHandler
+
                         when (keyAction) {
                             is KeyAction.Type -> commandHandler.type(keyAction.letter)
                             KeyAction.Submit -> commandHandler.submit()

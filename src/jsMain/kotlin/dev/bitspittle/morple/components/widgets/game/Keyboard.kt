@@ -74,7 +74,7 @@ val ControlKeyVariant = KeyStyle.addVariant("control") {
     Breakpoint.SM { Modifier.width(20.percent) }
 }
 
-private val ComponentStyleState.FILLED_KEY_STYLE get() = Modifier
+private val ComponentModifier.FILLED_KEY_STYLE get() = Modifier
     .color(colorMode.toSitePalette().tile.text)
 
 val AbsentKeyVariant = KeyStyle.addVariantBase("absent") {

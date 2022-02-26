@@ -64,15 +64,19 @@ class Validator {
             }
 
             val totalAbsentCharacters = usedAbsentChars.values.sum()
-            val repeatedAbsentCharacters = usedAbsentChars.values.sumOf { it - 1 }
 
-            if ((repeatedAbsentCharacters / totalAbsentCharacters.toFloat()) > gameSettings.maxAbsentRepetitionPercent) {
-                usedAbsentChars.filter { it.value > 1 }.keys.forEach { overusedLetter ->
-                    for (y in 0 until board.numRows - 1) {
-                        for (x in 0 until Board.NUM_COLS) {
-                            val letter = board.letters[x, y] ?: continue
-                            if (board.tiles[x, y] == TileState.ABSENT && letter == overusedLetter) {
-                                errors.add(GameError.RepeatedAbsent(letter, x, y))
+            // If a puzzle only has three (or less) absent squares in it, it's probably fine if two are the same letter
+            if (totalAbsentCharacters > 3) {
+                val repeatedAbsentCharacters = usedAbsentChars.values.sumOf { it - 1 }
+
+                if ((repeatedAbsentCharacters / totalAbsentCharacters.toFloat()) > gameSettings.maxAbsentRepetitionPercent) {
+                    usedAbsentChars.filter { it.value > 1 }.keys.forEach { overusedLetter ->
+                        for (y in 0 until board.numRows - 1) {
+                            for (x in 0 until Board.NUM_COLS) {
+                                val letter = board.letters[x, y] ?: continue
+                                if (board.tiles[x, y] == TileState.ABSENT && letter == overusedLetter) {
+                                    errors.add(GameError.RepeatedAbsent(letter, x, y))
+                                }
                             }
                         }
                     }

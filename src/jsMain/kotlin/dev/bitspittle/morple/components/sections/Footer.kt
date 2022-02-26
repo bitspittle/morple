@@ -20,7 +20,6 @@ import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.text.Text
 import com.varabyte.kobweb.silk.theme.SilkTheme
-import com.varabyte.kobweb.silk.theme.rememberBreakpoint
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 
@@ -48,21 +47,18 @@ private fun FooterLink(href: String, content: @Composable () -> Unit) {
 @Composable
 fun Footer(modifier: Modifier = Modifier) {
     Column(FooterStyle.toModifier().then(modifier), horizontalAlignment = Alignment.CenterHorizontally) {
-        val bp by rememberBreakpoint()
-
-        if (bp >= Breakpoint.MD) {
-            Row(
-                Modifier
-                    .justifyContent(JustifyContent.SpaceAround)
-                    .width(10.cssRem)
-                    .margin(bottom = 0.5.cssRem),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
-                FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
-                FooterLink("https://github.com/bitspittle/morple") { FaGithub() }
-                FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }
-            }
+        Row(
+            Modifier
+                .justifyContent(JustifyContent.SpaceAround)
+                .width(10.cssRem)
+                .margin(bottom = 0.5.cssRem)
+                .displayIf(Breakpoint.MD),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Link("https://bitspittle.dev", "\$bs", variant = BsLinkVariant.then(UndecoratedLinkVariant))
+            FooterLink("https://twitter.com/bitspittle") { FaTwitter() }
+            FooterLink("https://github.com/bitspittle/morple") { FaGithub() }
+            FooterLink("https://www.linkedin.com/in/hermandave") { FaLinkedin() }
         }
 
         Row {

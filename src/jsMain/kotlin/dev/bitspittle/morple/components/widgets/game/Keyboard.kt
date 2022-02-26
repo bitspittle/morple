@@ -16,10 +16,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.icons.fa.FaBackspace
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import dev.bitspittle.morple.data.Board
-import dev.bitspittle.morple.data.GameSettings
-import dev.bitspittle.morple.data.TileState
-import dev.bitspittle.morple.data.forEachIndexed
+import dev.bitspittle.morple.data.*
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -83,6 +80,10 @@ val AbsentKeyVariant = KeyStyle.addVariantBase("absent") {
         .backgroundColor(colorMode.toSitePalette().tile.absent)
 }
 
+val RepetetiveKeyVariant = KeyStyle.addVariantBase("repetitive") {
+    Modifier.color(colorMode.toSitePalette().warning)
+}
+
 val PresentKeyVariant = KeyStyle.addVariantBase("present") {
     FILLED_KEY_STYLE
         .backgroundColor(colorMode.toSitePalette().tile.present)
@@ -102,10 +103,10 @@ val HiddenStyle = ComponentStyle.base("morple-hidden") {
 }
 
 @Composable
-private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, autoSubmit: Boolean, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
+private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, action: KeyAction, autoSubmit: Boolean, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
-            TileState.ABSENT -> AbsentKeyVariant
+            TileState.ABSENT -> AbsentKeyVariant.then(if (overusedChars.contains(action.letter)) RepetetiveKeyVariant else ComponentVariant.Empty)
             TileState.PRESENT -> PresentKeyVariant
             TileState.MATCH -> MatchKeyVariant
             null -> ComponentVariant.Empty
@@ -139,6 +140,7 @@ private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, autoSubmit:
 fun Keyboard(
     gameSettings: GameSettings,
     board: Board,
+    errors: List<GameError>,
     onKeyPressed: (KeyAction) -> Unit,
     forceInvalidationWhenBoardChanges: () -> Unit,
 ) {
@@ -164,11 +166,15 @@ fun Keyboard(
         }
     }
 
+    val overusedChars = errors
+        .mapNotNull { error -> (error as? GameError.RepeatedAbsent)?.letter }
+        .toSet()
+
     Column(KeyboardStyle.toModifier(), horizontalAlignment = Alignment.CenterHorizontally) {
         KEYBOARD_LAYOUT.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 row.forEach { keyAction ->
-                    Key(tileStates, keyAction, gameSettings.showErrorsInstantly, board.isFilled, onKeyPressed)
+                    Key(tileStates, overusedChars, keyAction, gameSettings.showErrorsInstantly, board.isFilled, onKeyPressed)
                 }
             }
         }

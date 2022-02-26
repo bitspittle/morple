@@ -281,6 +281,7 @@ fun HomePage() {
                 Keyboard(
                     gameSettings,
                     board,
+                    mutableErrors,
                     onKeyPressed = keyHandler@ { keyAction ->
                         if (mutableGameState.value == GameState.Finished) return@keyHandler
 

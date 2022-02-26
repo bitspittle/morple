@@ -13,12 +13,14 @@ sealed class Error(val message: String) {
     class NotMatch(letter: Char, x: Int, y: Int) : Tile(x, y, "The letter '$letter' does not match the final solution")
 }
 
+private const val INVALID_CHAR = '?'
+
 class Validator {
     fun validate(board: Board, words: Set<String>): List<Error> {
         val errors = mutableListOf<Error>()
 
         val finalWord = (0 until Board.NUM_COLS)
-            .map { x -> board.letters[x, board.numRows - 1] ?: '?' }
+            .map { x -> board.letters[x, board.numRows - 1] ?: INVALID_CHAR }
             .joinToString("")
 
         // Missing letters
@@ -50,7 +52,8 @@ class Validator {
 
         // Repeated absent characters
         mutableMapOf<Char, Int>().let { usedAbsentChars ->
-            for (y in 0 until board.numRows) {
+            // No need to check last row -- it is, by definition, all matches
+            for (y in 0 until board.numRows - 1) {
                 for (x in 0 until Board.NUM_COLS) {
                     val letter = board.letters[x, y] ?: continue
                     if (board.tiles[x, y] == TileState.ABSENT) {
@@ -64,30 +67,23 @@ class Validator {
             }
         }
 
-        // Not absent
+        // Not match / Not present / Not absent
         // Skip last row - no need to compare against itself
         for (y in 0 until board.numRows - 1) {
-            for (x in 0 until Board.NUM_COLS) {
-                val letter = board.letters[x, y] ?: continue
-                if (board.tiles[x, y] == TileState.ABSENT && finalWord.contains(letter)) {
-                    errors.add(Error.NotAbsent(letter, x, y))
-                }
-            }
-        }
+            val mutableFinalWord = finalWord.toMutableList()
 
-
-        // Not present
-        // Skip last row - no need to compare against itself
-        for (y in 0 until board.numRows - 1) {
-            val finalLetterCounts = finalWord.groupingBy { it }.eachCount().toMutableMap()
             // First, remove characters already matched on this line, they shouldn't be counted against when checking
             // remaining present characters
             for (x in 0 until Board.NUM_COLS) {
                 val letter = board.letters[x, y] ?: continue
-                if (board.tiles[x, y] == TileState.MATCH && letter == finalWord[x]) {
-                    val count = finalLetterCounts.getValue(letter)
-                    check(count > 0) // letter == finalWord[x] implies the letter should be counted
-                    finalLetterCounts[letter] = count - 1
+                if (board.tiles[x, y] == TileState.MATCH) {
+                    if (letter != mutableFinalWord[x]) {
+                        errors.add(Error.NotMatch(letter, x, y))
+                    }
+                    else {
+                        // Remove the letter so it won't be reused by following checks
+                        mutableFinalWord[x] = INVALID_CHAR
+                    }
                 }
             }
 
@@ -95,23 +91,26 @@ class Validator {
             for (x in 0 until Board.NUM_COLS) {
                 val letter = board.letters[x, y] ?: continue
                 if (board.tiles[x, y] == TileState.PRESENT) {
-                    val count = finalLetterCounts[letter]
-                    if (count == null || count == 0) {
+                    val foundIndex = mutableFinalWord.indexOf(letter)
+                    // Direct matches should not be consumed! They're errors
+                    if (foundIndex >= 0 && foundIndex != x) {
+                        mutableFinalWord[foundIndex] = INVALID_CHAR
+                    }
+                    else {
                         errors.add(Error.NotPresent(letter, x, y))
-                    } else {
-                        finalLetterCounts[letter] = count - 1
                     }
                 }
             }
-        }
 
-        // Not match
-        // Skip last row - no need to compare against itself
-        for (y in 0 until board.numRows - 1) {
+            // Now that we've removed matched AND present characters from consideration, let's check all remaining
+            // absent tiles
             for (x in 0 until Board.NUM_COLS) {
                 val letter = board.letters[x, y] ?: continue
-                if (board.tiles[x, y] == TileState.MATCH && finalWord[x] != letter) {
-                    errors.add(Error.NotMatch(letter, x, y))
+                if (board.tiles[x, y] == TileState.ABSENT) {
+                    val foundIndex = mutableFinalWord.indexOf(letter)
+                    if (foundIndex >= 0) {
+                        errors.add(Error.NotAbsent(letter, x, y))
+                    }
                 }
             }
         }

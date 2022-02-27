@@ -1,25 +1,18 @@
 package dev.bitspittle.morple.components.widgets.game
 
-import androidx.compose.runtime.*
-import dev.bitspittle.morple.data.List2d
-import org.w3c.dom.HTMLElement
-
 class Navigator(
-    private val elements: List2d<HTMLElement>,
-    mutableActiveTile: MutableState<Pair<Int, Int>>
+    private val numRows: Int,
+    private val numCols: Int,
+    private val getPos: () -> Pair<Int, Int>,
+    private val setFocus: (Int, Int) -> Unit,
 ) {
-    private var activeTile by mutableActiveTile
+    val maxX get() = numCols - 1
+    val maxY get() = numRows - 1
 
-    val maxX get() = elements.numCols - 1
-    val maxY get() = elements.numRows - 1
+    val x get() = getPos().first
+    val y get() = getPos().second
 
-    val x get() = activeTile.first
-    val y get() = activeTile.second
-
-    fun navTo(x: Int, y: Int) {
-        activeTile = x to y
-        elements[x, y].focus()
-    }
+    fun navTo(x: Int, y: Int) = setFocus(x, y)
 
     fun navUp() {
         if (y > 0) navTo(x, y - 1)

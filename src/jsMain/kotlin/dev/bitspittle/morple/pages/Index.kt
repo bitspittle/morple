@@ -260,7 +260,16 @@ fun HomePage() {
 
     PageLayout("Morple", description = "Wordle... but upside-down!") {
         val tileRefs = mutableListOf<HTMLElement>()
-        val navigator = Navigator(MutableList2d(tileRefs, Board.NUM_COLS), mutableActiveTile)
+        val tileRefs2d = MutableList2d(tileRefs, Board.NUM_COLS)
+        val navigator = Navigator(
+            board.numRows,
+            Board.NUM_COLS,
+            getPos = { mutableActiveTile.value.let { it.first to it.second } },
+            setFocus = { x, y ->
+                mutableActiveTile.value = x to y
+                tileRefs2d[x, y].focus()
+            }
+        )
         val commandHandler =
             CommandHandler(
                 gameSettings,

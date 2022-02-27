@@ -120,7 +120,7 @@ private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, acti
     } else if (action is KeyAction.Submit) {
         Div(
             KeyStyle.toModifier(ControlKeyVariant)
-                .then(DisabledButtonStyle.takeIf { autoSubmit || !boardFilled }?.toModifier() ?: Modifier)
+                .then(DisabledButtonStyle.takeIf { autoSubmit }?.toModifier() ?: Modifier)
                 .then(Modifier.onClick { if (!autoSubmit) onKeyPressed(action) })
                 .asAttributesBuilder()) {
             Text("CHECK")

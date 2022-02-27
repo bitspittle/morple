@@ -1,4 +1,7 @@
 // import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -15,9 +18,13 @@ repositories {
 }
 
 group = "dev.bitspittle.morple"
-version = "1.0-SNAPSHOT"
+version = SimpleDateFormat("yyyyMMdd.kkmm").apply {
+    timeZone = TimeZone.getTimeZone("UTC")
+}.format(Date())
 
 kobweb {
+    appGlobals.put("version", version.toString())
+
     index {
         description.set("Powered by Kobweb")
     }

@@ -147,9 +147,7 @@ fun MorpleBoard(
                             else {
                                 ComponentVariant.Empty
                             }
-                        ).then(
-                            if (gameState != GameState.Finished && x == activeTile.first && y == activeTile.second) FocusedTileVariant else ComponentVariant.Empty
-                        ),
+                        ).thenIf(gameState != GameState.Finished && x == activeTile.first && y == activeTile.second, FocusedTileVariant),
                         elementScope = {
                             DomSideEffect { div ->
                                 tileRefs.add(div)

@@ -106,10 +106,10 @@ val HiddenStyle = ComponentStyle.base("morple-hidden") {
 private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, action: KeyAction, autoSubmit: Boolean, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
-            TileState.ABSENT -> AbsentKeyVariant.then(if (overusedChars.contains(action.letter)) RepetetiveKeyVariant else ComponentVariant.Empty)
+            TileState.ABSENT -> AbsentKeyVariant.thenIf(overusedChars.contains(action.letter), RepetetiveKeyVariant)
             TileState.PRESENT -> PresentKeyVariant
             TileState.MATCH -> MatchKeyVariant
-            null -> ComponentVariant.Empty
+            null -> null
         }
 
         Div(KeyStyle.toModifier(keyVariant).asAttributesBuilder {

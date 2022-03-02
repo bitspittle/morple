@@ -74,7 +74,7 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
         require(initialState.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
         require(numRows in (1..MAX_NUM_ROWS)) { "Tried to create a board without 1 to $MAX_NUM_ROWS rows" }
 
-        _tiles.chunked(5).let { chunked ->
+        _tiles.chunked(NUM_COLS).let { chunked ->
             chunked.forEachIndexed { y, row ->
                 if (y == chunked.lastIndex) {
                     require(row.all { tileState -> tileState == TileState.MATCH }) {
@@ -92,12 +92,19 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
     val tiles = List2d(_tiles, NUM_COLS)
     val letters = MutableList2d(_letters, NUM_COLS)
 
+    /**
+     * Whether the letter at the current position can be changed or not
+     */
+    val isLocked = List2d(_letters.map { it != null}, NUM_COLS)
+
     fun resetLetters(actions: List<Action>) {
         initialState
             .map { it.second }
             .forEachIndexed { i, c -> _letters[i] = c }
 
         actions.forEach { action ->
+            if (isLocked[action.x, action.y]) return@forEach
+
             letters[action.x, action.y] = action.letter
 
             if (gameSettings.autoFillMatchColumns) {
@@ -106,7 +113,7 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
                     (0 until numRows)
                         .filter { y -> y != action.y }
                         .forEach { y ->
-                            if (tiles[action.x, y] == TileState.MATCH) {
+                            if (!isLocked[action.x, y] && tiles[action.x, y] == TileState.MATCH) {
                                 letters[action.x, y] = action.letter
                             }
                         }

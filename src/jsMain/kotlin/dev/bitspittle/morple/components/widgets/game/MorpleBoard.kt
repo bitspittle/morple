@@ -118,6 +118,7 @@ fun MorpleBoard(
                     val tileState = board.tiles[x, y]
                     Tile(
                         board.letters[x, y],
+                        board.isLocked[x, y],
                         Modifier.onClick {
                             navigator.navTo(x, y)
                         },

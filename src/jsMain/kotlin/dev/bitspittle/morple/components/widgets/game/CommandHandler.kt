@@ -60,12 +60,14 @@ class CommandHandler(
     fun type(letter: Char) {
         checkValidState()
 
-        if (board.letters[navigator.x, navigator.y] != letter) {
-            keyCount++
-        }
+        if (!board.isLocked[navigator.x, navigator.y]) {
+            if (board.letters[navigator.x, navigator.y] != letter) {
+                keyCount++
+            }
 
-        actionsUndo.add(Action(navigator.x, navigator.y, letter))
-        actionsRedo.clear()
+            actionsUndo.add(Action(navigator.x, navigator.y, letter))
+            actionsRedo.clear()
+        }
         navigator.navRight()
 
         updateBoardAndErrors()
@@ -80,11 +82,12 @@ class CommandHandler(
     fun delete(moveLeftIfEmpty: Boolean = false) {
         checkValidState()
 
-        // Special case handling for the very last char, since we can't move past it.
-        val isOnChar = board.letters[navigator.x, navigator.y] != null
+        // If we're on a deletable character, that should "consume" the backspace key. Otherwise, we allow it to move
+        // and delete the previous character, similar to how it feels to press the backspace key while typing!
+        val isOnChar = board.letters[navigator.x, navigator.y] != null && !board.isLocked[navigator.x, navigator.y]
 
         if (moveLeftIfEmpty && !isOnChar) navigator.navLeft()
-        if (board.letters[navigator.x, navigator.y] != null) {
+        if (board.letters[navigator.x, navigator.y] != null && !board.isLocked[navigator.x, navigator.y]) {
             actionsUndo.add(Action(navigator.x, navigator.y, null))
             actionsRedo.clear()
         }

@@ -38,6 +38,7 @@ class SitePalette(
         val hovered: Color,
         val focused: Color,
         val text: Color,
+        val lock: Color,
     )
 
     class Key(
@@ -60,6 +61,7 @@ object SitePalettes {
                 hovered = Colors.Black,
                 focused = Colors.Black,
                 text = Colors.White,
+                lock = Colors.White,
             ),
             SitePalette.Key(
                 bg = Color.rgb(0xd3d6da),
@@ -79,6 +81,7 @@ object SitePalettes {
                 hovered = Colors.White,
                 focused = Colors.White,
                 text = Colors.White,
+                lock = Colors.White,
             ),
             SitePalette.Key(
                 bg = Color.rgb(0x818384),

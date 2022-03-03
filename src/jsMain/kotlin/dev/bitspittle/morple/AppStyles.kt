@@ -12,14 +12,17 @@ import kotlinx.browser.localStorage
 
 const val COLOR_MODE_KEY = "morple:app:colorMode"
 
-private val TEXT_FONT = Modifier
-    .fontFamily("Ubuntu", "Roboto", "Arial", "Helvetica", "sans-serif")
-
 @InitSilk
 fun updateTheme(ctx: InitSilkContext) {
     ctx.config.initialColorMode = localStorage.getItem(COLOR_MODE_KEY)?.let { ColorMode.valueOf(it) } ?: ColorMode.DARK
 
-    ctx.config.registerBaseStyle("body") { TEXT_FONT.lineHeight(1.5) }
+    ctx.config.registerBaseStyle("body") {
+        Modifier.fontFamily("Ubuntu", "Roboto", "Arial", "Helvetica", "sans-serif")
+    }
+
+    ctx.config.registerBaseStyle(".morple-title") {
+        Modifier.fontFamily("Alegreya", "sans")
+    }
 }
 
 class SitePalette(

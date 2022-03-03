@@ -19,14 +19,13 @@ import org.jetbrains.compose.web.css.*
 val HeaderStyle = ComponentStyle.base("morple-header") {
     Modifier
         .fillMaxWidth()
-        .padding(0.5.cssRem)
         .fontSize(1.25.cssRem)
         .textAlign(TextAlign.Center)
 }
 
-val MorpleTextStyle = ComponentStyle.base("morple-text") {
+val MorpleTitleStyle = ComponentStyle.base("morple-title") {
     Modifier
-        .fontSize(2.cssRem)
+        .fontSize(2.5.cssRem)
         .fontWeight(FontWeight.Bold)
 }
 
@@ -34,7 +33,7 @@ val VersionTextStyle = ComponentStyle.base("morple-version") {
     Modifier
         .fontSize(0.6.cssRem)
         .textAlign(TextAlign.Center)
-        .margin(top = (-1).em)
+        .margin(top = (-0.7).em)
 }
 
 val HeaderButtonStyle = ComponentStyle.base("morple-header-button") {
@@ -46,7 +45,7 @@ val HeaderButtonStyle = ComponentStyle.base("morple-header-button") {
 fun Header() {
     Box(HeaderStyle.toModifier()) {
         Column(Modifier.align(Alignment.Center)) {
-            Text("Morple", MorpleTextStyle.toModifier())
+            Text("Morple", MorpleTitleStyle.toModifier())
             Text("v" + AppGlobals.getValue("version"), VersionTextStyle.toModifier().fillMaxWidth())
         }
         ColorModeButton(HeaderButtonStyle.toModifier().align(Alignment.CenterEnd))

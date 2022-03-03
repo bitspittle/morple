@@ -1,4 +1,5 @@
 // import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlinx.html.link
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
@@ -27,6 +28,23 @@ kobweb {
 
     index {
         description.set("Powered by Kobweb")
+
+        // See: https://fonts.google.com/share?selection.family=Martel:wght@900
+        head.add {
+            link {
+                rel = "preconnect"
+                href = "https://fonts.googleapis.com"
+            }
+            link {
+                rel = "preconnect"
+                href = "https://fonts.gstatic.com"
+                attributes["crossorigin"] = ""
+            }
+            link {
+                rel = "stylesheet"
+                href = "https://fonts.googleapis.com/css2?family=Alegreya:wght@900&display=swap"
+            }
+        }
     }
 }
 

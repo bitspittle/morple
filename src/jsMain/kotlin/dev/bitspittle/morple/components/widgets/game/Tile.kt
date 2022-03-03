@@ -81,6 +81,8 @@ fun Tile() {
 
 @Composable
 fun Tile(letter: Char?, locked: Boolean, modifier: Modifier = Modifier, variant: ComponentVariant? = null, elementScope: (@Composable ElementScope<HTMLElement>.() -> Unit)? = null) {
+    // Variants are used to indicate what kind of active tile this is -- otherwise, it's just an empty, non-focusable
+    // tile
     val focusable = Modifier.tabIndex(0).takeIf { variant != null } ?: Modifier
     Box(TileStyle.toModifier(variant).then(modifier).then(focusable), elementScope = elementScope) {
         if (letter != null) {

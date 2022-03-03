@@ -103,7 +103,7 @@ val HiddenStyle = ComponentStyle.base("morple-hidden") {
 }
 
 @Composable
-private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, action: KeyAction, autoSubmit: Boolean, boardFilled: Boolean, onKeyPressed: (KeyAction) -> Unit) {
+private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, action: KeyAction, autoSubmit: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
             TileState.ABSENT -> AbsentKeyVariant.thenIf(overusedChars.contains(action.letter), RepetetiveKeyVariant)
@@ -174,7 +174,7 @@ fun Keyboard(
         KEYBOARD_LAYOUT.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 row.forEach { keyAction ->
-                    Key(tileStates, overusedChars, keyAction, gameSettings.showErrorsInstantly, board.isFilled, onKeyPressed)
+                    Key(tileStates, overusedChars, keyAction, gameSettings.showErrorsInstantly, onKeyPressed)
                 }
             }
         }

@@ -1,18 +1,20 @@
 package dev.bitspittle.morple.components.widgets.game
 
+import dev.bitspittle.morple.data.Pt
+
 class Navigator(
     private val numRows: Int,
     private val numCols: Int,
-    private val getPos: () -> Pair<Int, Int>,
-    private val setFocus: (Int, Int) -> Unit,
+    private val getPos: () -> Pt,
+    private val setFocus: (Pt) -> Unit,
 ) {
     val maxX get() = numCols - 1
     val maxY get() = numRows - 1
 
-    val x get() = getPos().first
-    val y get() = getPos().second
+    val x get() = getPos().x
+    val y get() = getPos().y
 
-    fun navTo(x: Int, y: Int) = setFocus(x, y)
+    fun navTo(x: Int, y: Int) = setFocus(Pt(x, y))
 
     fun navUp() {
         if (y > 0) navTo(x, y - 1)

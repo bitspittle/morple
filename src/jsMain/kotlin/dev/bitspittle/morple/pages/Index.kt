@@ -1,6 +1,7 @@
 package dev.bitspittle.morple.pages
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Spacer
@@ -9,9 +10,12 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
+import com.varabyte.kobweb.silk.components.icons.fa.FaExclamationCircle
+import com.varabyte.kobweb.silk.components.style.*
 import dev.bitspittle.morple.components.layout.PageLayout
 import dev.bitspittle.morple.components.widgets.game.*
 import dev.bitspittle.morple.data.*
+import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.window
 import org.w3c.dom.HTMLElement
 
@@ -20,6 +24,10 @@ fun <T> MutableMap<T, Unit>.add(key: T) {
 }
 
 external fun decodeURIComponent(encodedURI: String): String
+
+val ErrorIconStyle = ComponentStyle.base("morple-error") {
+    Modifier.color(colorMode.toSitePalette().error).cursor(Cursor.Pointer)
+}
 
 @Page
 @Composable
@@ -30,7 +38,7 @@ fun HomePage() {
     var ready by remember { mutableStateOf(false) }
 
     val mutableGameState = remember { mutableStateOf<GameState>(GameState.Normal) }
-    val mutableActiveTile = remember { mutableStateOf(0 to 0) }
+    val mutableActiveTile = remember { mutableStateOf(Pt()) }
     val mutableKeyCount = remember { mutableStateOf(0) }
     val mutableErrors = remember { mutableStateListOf<GameError>() }
     val mutableShowErrors = remember { mutableStateOf(false) }
@@ -77,16 +85,36 @@ fun HomePage() {
     val actionsUndo = remember { mutableStateListOf<Action>() }
     val actionsRedo = remember { mutableStateListOf<Action>() }
 
-    PageLayout("Morple", description = "Wordle... but upside-down!") {
+    // Empty tiles are obvious -- no need to show a distracting error icon for them
+    val indexedTileErrors = mutableErrors.filterIsInstance<GameError.Tile>().filter { it !is GameError.EmptyTile }.groupBy { Pt(it.x, it.y) }
+    val indexedRowErrors = mutableErrors.filterIsInstance<GameError.Row>().groupBy { it.y }
+
+    PageLayout(
+        "Morple", description = "Wordle... but upside-down!",
+        extraAction = {
+            val activeTile by mutableActiveTile
+            val showErrors by mutableShowErrors
+            if (showErrors && indexedTileErrors.contains(activeTile) || indexedRowErrors.contains(activeTile.y)) {
+                FaExclamationCircle(ErrorIconStyle.toModifier().onClick {
+                    indexedRowErrors[activeTile.y]?.forEach {
+                        println(it.message)
+                    }
+                    indexedTileErrors[activeTile]?.forEach {
+                        println(it.message)
+                    }
+                })
+            }
+        }
+    ) {
         val tileRefs = mutableListOf<HTMLElement>()
         val tileRefs2d = MutableList2d(tileRefs, Board.NUM_COLS)
         val navigator = Navigator(
             board.numRows,
             Board.NUM_COLS,
-            getPos = { mutableActiveTile.value.let { it.first to it.second } },
-            setFocus = { x, y ->
-                mutableActiveTile.value = x to y
-                tileRefs2d[x, y].focus()
+            getPos = { mutableActiveTile.value },
+            setFocus = { pt ->
+                mutableActiveTile.value = pt
+                tileRefs2d[pt.x, pt.y].focus()
             }
         )
         val commandHandler =

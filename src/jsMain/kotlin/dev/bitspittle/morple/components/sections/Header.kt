@@ -21,6 +21,7 @@ val HeaderStyle = ComponentStyle.base("morple-header") {
         .fillMaxWidth()
         .fontSize(1.25.cssRem)
         .textAlign(TextAlign.Center)
+        .padding(topBottom = 0.px, leftRight = 1.cssRem)
 }
 
 val MorpleTitleStyle = ComponentStyle.base("morple-title") {
@@ -37,13 +38,17 @@ val VersionTextStyle = ComponentStyle.base("morple-version") {
 }
 
 val HeaderButtonStyle = ComponentStyle.base("morple-header-button") {
-    Modifier
-        .margin(0.px, 10.px).backgroundColor(colorMode.toSilkPalette().background)
+    Modifier.backgroundColor(colorMode.toSilkPalette().background)
 }
 
 @Composable
-fun Header() {
+fun Header(extraAction: (@Composable () -> Unit)? = null) {
     Box(HeaderStyle.toModifier()) {
+        if (extraAction != null) {
+            Box(Modifier.align(Alignment.CenterStart)) {
+                extraAction()
+            }
+        }
         Column(Modifier.align(Alignment.Center)) {
             Text("Morple", MorpleTitleStyle.toModifier())
             Text("v" + AppGlobals.getValue("version"), VersionTextStyle.toModifier().fillMaxWidth())

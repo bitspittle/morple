@@ -56,7 +56,7 @@ fun MorpleBoard(
     commandHandler: CommandHandler,
     tileRefs: MutableList<HTMLElement>,
     mutableGameState: MutableState<GameState>,
-    mutableActiveTile: MutableState<Pair<Int, Int>>,
+    mutableActiveTile: MutableState<Pt>,
     errors: List<GameError>,
     showErrors: Boolean,
     forceInvalidationWhenBoardChanges: () -> Unit,
@@ -65,6 +65,9 @@ fun MorpleBoard(
 
     val gameState by mutableGameState
     val activeTile by mutableActiveTile
+
+    val indexedTileErrors = errors.filterIsInstance<GameError.Tile>().groupBy { Pt(it.x, it.y) }
+    val indexedRowErrors = errors.filterIsInstance<GameError.Row>().groupBy { it.y }
 
     LaunchedEffect(board) {
         document.onkeydown = keyHandler@ { evt ->
@@ -110,9 +113,7 @@ fun MorpleBoard(
     Column(BoardStyle.toModifier().then(FinishedBoardStyle.toModifier().takeIf { gameState is GameState.Finished } ?: Modifier)) {
         (0 until board.numRows).forEach { y ->
             Row(
-                ErrorRowStyle.toModifier().takeIf {
-                    showErrors && errors.any { error -> error is GameError.Row && error.y == y }
-                } ?: Modifier
+                ErrorRowStyle.toModifier().takeIf {indexedRowErrors.contains(y) } ?: Modifier
             ) {
                 (0 until Board.NUM_COLS).forEach { x ->
                     val tileState = board.tiles[x, y]
@@ -126,28 +127,26 @@ fun MorpleBoard(
                             TileState.ABSENT -> AbsentTileVariant
                             TileState.PRESENT -> PresentTileVariant
                             TileState.MATCH -> MatchTileVariant
-                        }.then(
-                            if (errors.any { error ->
-                                    error is GameError.RepeatedAbsent && error.x == x && error.y == y
-                                }) {
-                                LetterWarningTileVariant
+                        }.then(run {
+                            val pt = Pt(x, y)
+                            val tileErrors = indexedTileErrors[pt] ?: return@run ComponentVariant.Empty
+
+                            when {
+                                // Showing all empty tiles is way too noisy in "showErrorsInstantly" mode
+                                showErrors && !gameSettings.showErrorsInstantly && tileErrors.filterIsInstance<GameError.EmptyTile>()
+                                    .any() -> EmptyErrorTileVariant
+
+                                showErrors && tileErrors.filterIsInstance<GameError.LetterTile>()
+                                    .any { it !is GameError.RepeatedAbsent } ->
+                                    LetterErrorTileVariant
+
+                                // Repeated tiles are too hard to reason about without doing math, so always show them
+                                tileErrors.filterIsInstance<GameError.RepeatedAbsent>().any() ->
+                                    LetterWarningTileVariant
+
+                                else -> ComponentVariant.Empty
                             }
-                            else if (showErrors) {
-                                when {
-                                    // Showing all empty tiles is way too noisy in "showErrorsInstantly" mode
-                                    !gameSettings.showErrorsInstantly && errors.any { error ->
-                                        error is GameError.EmptyTile && error.x == x && error.y == y
-                                    } -> EmptyErrorTileVariant
-                                    errors.any { error ->
-                                        error is GameError.LetterTile && error.x == x && error.y == y
-                                    } -> LetterErrorTileVariant
-                                    else -> ComponentVariant.Empty
-                                }
-                            }
-                            else {
-                                ComponentVariant.Empty
-                            }
-                        ).thenIf(gameState != GameState.Finished && x == activeTile.first && y == activeTile.second, FocusedTileVariant),
+                        }).thenIf(gameState != GameState.Finished && x == activeTile.x && y == activeTile.y, FocusedTileVariant),
                         elementScope = {
                             DomSideEffect { div ->
                                 tileRefs.add(div)

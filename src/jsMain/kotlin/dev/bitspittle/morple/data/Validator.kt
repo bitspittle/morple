@@ -8,9 +8,10 @@ sealed class GameError(val message: String) {
     class EmptyTile(x: Int, y: Int) : Tile(x, y, "A letter is missing.")
     class InvalidWord(invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
     class RepeatedWord(repeatedWord: String, y: Int) : Row(y, "\"$repeatedWord\" was already used earlier.")
-    class NotAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is present in the final word")
-    class RepeatedAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is a repeat, and you have more absent repeats than allowed for this puzzle")
-    class NotPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is not present in the final word")
+    class NotAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is present in the final word.")
+    class RepeatedAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is a repeat, and you have more absent repeats than allowed for this puzzle.")
+    class NotPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is not present in the final word (or it is but has already been matched by a different tile).")
+    class InvalidPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' matches the final solution when it should not.")
     class InconsistentMatch(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' does not agree with other matches in the same column.")
     class NotMatch(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' does not match the final solution")
 }
@@ -123,25 +124,33 @@ class Validator {
                     }
                 }
 
-                // Now that we've removed matched characters from consideration, let's check all remaining present tiles
+                // Call out present tiles that match the final row.
                 for (x in 0 until Board.NUM_COLS) {
                     val letter = board.letters[x, y] ?: continue
                     if (board.tiles[x, y] == TileState.PRESENT) {
-                        val foundIndex = mutableFinalWord.indexOf(letter)
-                        // Direct matches should not be consumed! They're errors
-                        if (foundIndex >= 0 && foundIndex != x) {
-                            mutableFinalWord[foundIndex] = INVALID_CHAR
-                        } else {
-                            errors.add(GameError.NotPresent(letter, x, y))
+                        if (letter == finalWord[x]) {
+                            errors.add(GameError.InvalidPresent(letter, x, y))
                         }
                     }
                 }
 
-                // Now that we've removed matched AND present characters from consideration, let's check all remaining
-                // absent tiles
+                // Now that we've removed matched characters from consideration, let's check all remaining present tiles
+                // in order from left to right. This is done so we cannot have an absent tile show up before a
+                // present tile with the same letter value - in that case, the first letter should be present and the
+                // last should be absent.
                 for (x in 0 until Board.NUM_COLS) {
                     val letter = board.letters[x, y] ?: continue
-                    if (board.tiles[x, y] == TileState.ABSENT) {
+                    if (board.tiles[x, y] == TileState.PRESENT) {
+                        // Skip over errors reported by the previous "invalid present" section
+                        if (letter != finalWord[x]) {
+                            val foundIndex = mutableFinalWord.indexOf(letter)
+                            if (foundIndex >= 0) {
+                                mutableFinalWord[foundIndex] = INVALID_CHAR
+                            } else {
+                                errors.add(GameError.NotPresent(letter, x, y))
+                            }
+                        }
+                    } else if (board.tiles[x, y] == TileState.ABSENT) {
                         val foundIndex = mutableFinalWord.indexOf(letter)
                         if (foundIndex >= 0) {
                             errors.add(GameError.NotAbsent(letter, x, y))

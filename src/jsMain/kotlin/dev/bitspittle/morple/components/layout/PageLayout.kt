@@ -23,7 +23,7 @@ val CenterColumnStyle = ComponentStyle("morple-center-column") {
 }
 
 @Composable
-fun PageLayout(title: String, description: String = "", content: @Composable ColumnScope.() -> Unit) {
+fun PageLayout(title: String, description: String = "", extraAction: (@Composable () -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
     LaunchedEffect(title) {
         document.title = title
         document.querySelector("""meta[name="description"]""")!!.setAttribute("content", description)
@@ -43,7 +43,7 @@ fun PageLayout(title: String, description: String = "", content: @Composable Col
             modifier = Modifier.fillMaxSize().maxWidth(800.px).align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Header()
+            Header(extraAction)
             Column(CenterColumnStyle.toModifier()) {
                 content()
             }

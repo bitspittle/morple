@@ -19,7 +19,7 @@ val ModalStyle = ComponentStyle.base("morple-modal") {
         .right(0.px)
         .bottom(0.px)
         .left(0.px)
-        .backgroundColor(Colors.Black.copyf(alpha = 0.7f))
+        .backgroundColor(Colors.Black.copyf(alpha = 0.8f))
         .zIndex(1000) // TODO: Add z-index constants for various categories
 }
 
@@ -31,6 +31,7 @@ val ModalContentStyle = ComponentStyle("morple-modal-content") {
             .height(60.percent)
             .margin(top = 20.percent)
             .overflowY(Overflow.Auto)
+            .color(Colors.White)
             .padding(1.cssRem)
     }
 

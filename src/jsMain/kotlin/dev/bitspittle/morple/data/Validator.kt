@@ -115,7 +115,7 @@ class Validator {
                 for (x in 0 until Board.NUM_COLS) {
                     val letter = board.letters[x, y] ?: continue
                     if (board.tiles[x, y] == TileState.MATCH) {
-                        if (letter != mutableFinalWord[x]) {
+                        if (letter != finalWord[x]) {
                             errors.add(GameError.NotMatch(letter, x, y))
                         } else {
                             // Remove the letter so it won't be reused by following checks

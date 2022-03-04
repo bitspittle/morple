@@ -113,7 +113,7 @@ fun MorpleBoard(
     Column(BoardStyle.toModifier().then(FinishedBoardStyle.toModifier().takeIf { gameState is GameState.Finished } ?: Modifier)) {
         (0 until board.numRows).forEach { y ->
             Row(
-                ErrorRowStyle.toModifier().takeIf {indexedRowErrors.contains(y) } ?: Modifier
+                ErrorRowStyle.toModifier().takeIf { showErrors && indexedRowErrors.contains(y) } ?: Modifier
             ) {
                 (0 until Board.NUM_COLS).forEach { x ->
                     val tileState = board.tiles[x, y]

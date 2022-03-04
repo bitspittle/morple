@@ -34,9 +34,8 @@ val ModalContentStyle = ComponentStyle("morple-modal-content") {
             .padding(1.cssRem)
     }
 
-    Breakpoint.MD {
-        Modifier
-            .maxWidth(600.px)
+    Breakpoint.SM {
+        Modifier.maxWidth(400.px)
     }
 }
 

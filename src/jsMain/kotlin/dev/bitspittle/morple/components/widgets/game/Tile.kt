@@ -67,11 +67,11 @@ val LetterWarningTileVariant = TileStyle.addVariantBase("warn-letter") {
 
 // Changing the text color of empty tiles is useless... so outline them instead!
 val EmptyErrorTileVariant = TileStyle.addVariantBase("error-empty") {
-    Modifier.outline(width = 1.px, LineStyle.Solid, colorMode.toSitePalette().error.toCssColor())
+    Modifier.boxShadow("0 0 4px 1px ${colorMode.toSitePalette().error.toCssColor()}")
 }
 
 val FocusedTileVariant = TileStyle.addVariantBase("focused") {
-    Modifier.outline(width = 4.px, LineStyle.Solid, colorMode.toSitePalette().tile.focused.toCssColor())
+    Modifier.boxShadow("0 0 6px 2px ${colorMode.toSitePalette().tile.focused.toCssColor()}")
 }
 
 @Composable

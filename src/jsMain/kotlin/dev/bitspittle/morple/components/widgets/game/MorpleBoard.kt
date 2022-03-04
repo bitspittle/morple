@@ -41,11 +41,11 @@ val BoardStyle = ComponentStyle.base("morple-board") {
 }
 
 val FinishedBoardStyle = ComponentStyle.base("morple-finished-board") {
-    Modifier.outline(width = 4.px, LineStyle.Double, colorMode.toSitePalette().finished.toCssColor())
+    Modifier.boxShadow("0 0 10px 4px ${colorMode.toSitePalette().finished.toCssColor()}")
 }
 
 val ErrorRowStyle = ComponentStyle.base("morple-error-row") {
-    Modifier.outline(width = 1.px, LineStyle.Solid, colorMode.toSitePalette().error.toCssColor())
+    Modifier.boxShadow("0 0 4px 1px ${colorMode.toSitePalette().error.toCssColor()}")
 }
 
 @Composable

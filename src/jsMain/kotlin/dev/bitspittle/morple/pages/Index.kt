@@ -12,11 +12,15 @@ import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.icons.fa.FaExclamationCircle
 import com.varabyte.kobweb.silk.components.style.*
+import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.layout.PageLayout
 import dev.bitspittle.morple.components.widgets.game.*
+import dev.bitspittle.morple.components.widgets.overlay.Modal
 import dev.bitspittle.morple.data.*
 import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.window
+import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
 fun <T> MutableMap<T, Unit>.add(key: T) {
@@ -89,19 +93,16 @@ fun HomePage() {
     val indexedTileErrors = mutableErrors.filterIsInstance<GameError.Tile>().filter { it !is GameError.EmptyTile }.groupBy { Pt(it.x, it.y) }
     val indexedRowErrors = mutableErrors.filterIsInstance<GameError.Row>().groupBy { it.y }
 
+    var showErrorModal by remember { mutableStateOf(false) }
+    val activeTile by mutableActiveTile
+
     PageLayout(
         "Morple", description = "Wordle... but upside-down!",
         extraAction = {
-            val activeTile by mutableActiveTile
             val showErrors by mutableShowErrors
             if (showErrors && indexedTileErrors.contains(activeTile) || indexedRowErrors.contains(activeTile.y)) {
                 FaExclamationCircle(ErrorIconStyle.toModifier().onClick {
-                    indexedRowErrors[activeTile.y]?.forEach {
-                        println(it.message)
-                    }
-                    indexedTileErrors[activeTile]?.forEach {
-                        println(it.message)
-                    }
+                    showErrorModal = true
                 })
             }
         }
@@ -165,6 +166,19 @@ fun HomePage() {
                     },
                     forceInvalidationWhenBoardChanges = { actionsUndo.firstOrNull() }
                 )
+            }
+        }
+
+        if (showErrorModal) {
+            Modal(onCloseRequested = { showErrorModal = false }) {
+                Column(Modifier.rowGap(1.cssRem)) {
+                    indexedRowErrors[activeTile.y]?.forEach {
+                        Div { Text(it.message) }
+                    }
+                    indexedTileErrors[activeTile]?.forEach {
+                        Div { Text(it.message) }
+                    }
+                }
             }
         }
     }

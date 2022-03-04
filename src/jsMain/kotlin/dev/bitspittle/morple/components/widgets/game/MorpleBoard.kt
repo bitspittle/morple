@@ -75,6 +75,7 @@ fun MorpleBoard(
                 return@keyHandler Unit
             }
 
+            evt.preventDefault()
             LETTER_CODES[evt.key]?.let { letter ->
                 if (letter == 'Z' && !evt.altKey && evt.shiftKey && evt.ctrlKey) {
                     commandHandler.redo()

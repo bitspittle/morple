@@ -26,7 +26,6 @@ fun updateTheme(ctx: InitSilkContext) {
 }
 
 class SitePalette(
-    val finished: Color,
     val error: Color,
     val warning: Color,
     val tile: Tile,
@@ -38,7 +37,6 @@ class SitePalette(
         val absent: Color,
         val present: Color,
         val match: Color,
-        val hovered: Color,
         val focused: Color,
         val text: Color,
         val lock: Color,
@@ -53,7 +51,6 @@ class SitePalette(
 object SitePalettes {
     private val sitePalettes = mapOf(
         ColorMode.LIGHT to SitePalette(
-            finished = Colors.GoldenRod,
             error = Colors.Red,
             warning = Colors.Yellow,
             SitePalette.Tile(
@@ -61,7 +58,6 @@ object SitePalettes {
                 absent = Color.rgb(0x787c73),
                 present = Color.rgb(0xc9b458),
                 match = Color.rgb(0x6aaa64),
-                hovered = Colors.Black,
                 focused = Colors.Black,
                 text = Colors.White,
                 lock = Colors.White,
@@ -73,7 +69,6 @@ object SitePalettes {
             bs = Color.rgb(0x009900),
         ),
         ColorMode.DARK to SitePalette(
-            finished = Colors.Gold,
             error = Colors.Red,
             warning = Colors.Yellow,
             SitePalette.Tile(
@@ -81,7 +76,6 @@ object SitePalettes {
                 absent = Color.rgb(0x3a3a3c),
                 present = Color.rgb(0xb59f3b),
                 match = Color.rgb(0x538d4e),
-                hovered = Colors.White,
                 focused = Colors.White,
                 text = Colors.White,
                 lock = Colors.White,

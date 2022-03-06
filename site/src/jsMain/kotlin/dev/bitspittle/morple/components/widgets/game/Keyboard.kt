@@ -141,7 +141,7 @@ private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, acti
 @Composable
 fun Keyboard(
     gameSettings: GameSettings,
-    board: Board,
+    board: GameBoard,
     errors: List<GameError>,
     onKeyPressed: (KeyAction) -> Unit,
     forceInvalidationWhenBoardChanges: () -> Unit,

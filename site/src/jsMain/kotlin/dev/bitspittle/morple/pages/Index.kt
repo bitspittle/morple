@@ -13,6 +13,7 @@ import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.icons.fa.FaExclamationCircle
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.text.Text
+import dev.bitspittle.morple.common.board.Board
 import dev.bitspittle.morple.common.board.Pt
 import dev.bitspittle.morple.common.collections.MutableList2d
 import dev.bitspittle.morple.components.layout.PageLayout
@@ -76,13 +77,13 @@ fun HomePage() {
         if (puzzleValue != null) {
             try {
                 val puzzleValueBytes = puzzleValue.map { c -> c.code.toByte() }.toByteArray()
-                return@remember Board.from(gameSettings, decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
+                return@remember GameBoard.from(gameSettings, decodeURIComponent(puzzleValueBytes.decodeToString()).toEncoded())
             } catch (ex: Exception) {
                 println("Skipped puzzle, could not parse it: $ex.\n\nWill choose a random one instead")
             }
         }
 
-        Board.from(
+        GameBoard.from(
             gameSettings,
             SAMPLE_BOARDS.random().toEncoded()
         )

@@ -1,8 +1,12 @@
 package dev.bitspittle.morple.data
 
+import dev.bitspittle.morple.common.board.Board.Companion.MAX_NUM_ROWS
+import dev.bitspittle.morple.common.board.Board.Companion.NUM_COLS
+import dev.bitspittle.morple.common.board.FinalizedBoard
+import dev.bitspittle.morple.common.board.MutableBoard
 import dev.bitspittle.morple.common.board.TileState
 import dev.bitspittle.morple.common.collections.List2d
-import dev.bitspittle.morple.common.collections.MutableList2d
+import dev.bitspittle.morple.common.collections.map
 
 private val ENCODED_PART_REGEX = Regex("""([A-Z]?[+\-*])""")
 
@@ -33,11 +37,9 @@ fun String.toEncoded(): String {
     return encoded.joinToString("")
 }
 
-class Board(private val gameSettings: GameSettings, private val initialState: List<Pair<TileState, Char?>>) {
+class GameBoard(private val gameSettings: GameSettings, private val initialState: List<Pair<TileState, Char?>>)
+    : FinalizedBoard {
     companion object {
-        const val NUM_COLS = 5
-        const val MAX_NUM_ROWS = 6
-
         /**
          * A board represented as an encoded string.
          *
@@ -47,7 +49,7 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
          * If a letter (A-Z) is specified, then the character following it represents its state, e.g. "A-" means this
          * tile's character is the letter A which is not present in the final solution.
          */
-        fun from(gameSettings: GameSettings, encodedBoard: String): Board {
+        fun from(gameSettings: GameSettings, encodedBoard: String): GameBoard {
             val tiles = ENCODED_PART_REGEX.findAll(encodedBoard)
                 .map { result -> result.groupValues.first() }
                 .map { part ->
@@ -63,13 +65,22 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
                 }
                 .toList()
 
-            return Board(gameSettings, tiles)
+            return GameBoard(gameSettings, tiles)
         }
     }
 
-    private val _tiles = initialState.map { it.first }
-    private val _letters = initialState.map { it.second }.toMutableList()
-    val numRows = initialState.size / NUM_COLS
+    private val board = MutableBoard(initialState.size / NUM_COLS).apply {
+        for (i in initialState.indices) {
+            val y = i / NUM_COLS
+            val x = i % NUM_COLS
+            tiles[x, y] = initialState[i].first
+            letters[x, y] = initialState[2].second
+        }
+    }
+
+    override val numRows = board.numRows
+    override val tiles: List2d<TileState> = board.tiles
+    override val letters = board.letters
 
     var isFilled: Boolean = false
         private set
@@ -78,7 +89,7 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
         require(initialState.size % NUM_COLS == 0) { "Tried to create a board without $NUM_COLS columns in each row" }
         require(numRows in (1..MAX_NUM_ROWS)) { "Tried to create a board without 1 to $MAX_NUM_ROWS rows" }
 
-        _tiles.chunked(NUM_COLS).let { chunked ->
+        tiles.list1d.chunked(NUM_COLS).let { chunked ->
             chunked.forEachIndexed { y, row ->
                 if (y == chunked.lastIndex) {
                     require(row.all { tileState -> tileState == TileState.MATCH }) {
@@ -93,18 +104,15 @@ class Board(private val gameSettings: GameSettings, private val initialState: Li
         }
     }
 
-    val tiles = List2d(_tiles, NUM_COLS)
-    val letters = MutableList2d(_letters, NUM_COLS)
-
     /**
      * Whether the letter at the current position can be changed or not
      */
-    val isLocked = List2d(_letters.map { it != null}, NUM_COLS)
+    val isLocked = letters.map { it != null }
 
     fun resetLetters(actions: List<Action>) {
         initialState
             .map { it.second }
-            .forEachIndexed { i, c -> _letters[i] = c }
+            .forEachIndexed { i, c -> letters[i] = c }
 
         actions.forEach { action ->
             if (isLocked[action.x, action.y]) return@forEach

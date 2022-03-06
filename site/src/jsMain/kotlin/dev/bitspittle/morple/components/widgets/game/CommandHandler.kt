@@ -5,7 +5,7 @@ import dev.bitspittle.morple.data.*
 
 class CommandHandler(
     private val gameSettings: GameSettings,
-    private val board: Board,
+    private val board: GameBoard,
     private val navigator: Navigator,
     private val validator: Validator,
     private val words: Set<String>,

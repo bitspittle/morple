@@ -7,12 +7,12 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.*
+import dev.bitspittle.morple.common.board.Board
 import dev.bitspittle.morple.common.board.Pt
 import dev.bitspittle.morple.common.board.TileState
 import dev.bitspittle.morple.data.*
 import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.document
-import org.jetbrains.compose.web.css.*
 import org.w3c.dom.HTMLElement
 
 private val LETTER_CODES = (('a' .. 'z') + ('A'..'Z')).associate { it.toString() to it.uppercaseChar() }
@@ -53,7 +53,7 @@ val ErrorRowStyle = ComponentStyle.base("morple-error-row") {
 @Composable
 fun MorpleBoard(
     gameSettings: GameSettings,
-    board: Board,
+    board: GameBoard,
     navigator: Navigator,
     commandHandler: CommandHandler,
     tileRefs: MutableList<HTMLElement>,

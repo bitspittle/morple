@@ -1,5 +1,6 @@
 package dev.bitspittle.morple.data
 
+import dev.bitspittle.morple.common.board.Board
 import dev.bitspittle.morple.common.board.TileState
 
 sealed class GameError(val message: String) {

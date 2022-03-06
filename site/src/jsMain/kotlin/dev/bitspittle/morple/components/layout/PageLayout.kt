@@ -40,7 +40,7 @@ fun PageLayout(title: String, description: String = "", extraAction: (@Composabl
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().maxWidth(800.px).align(Alignment.TopCenter),
+            modifier = Modifier.fillMaxSize().maxWidth(550.px).align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Header(extraAction)

@@ -1,4 +1,4 @@
-package dev.bitspittle.morple.data
+package dev.bitspittle.morple.common.board
 
 data class Pt(val x: Int, val y: Int) {
     constructor() : this(0, 0)

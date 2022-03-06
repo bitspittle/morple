@@ -1,6 +1,6 @@
 package dev.bitspittle.morple.components.widgets.game
 
-import dev.bitspittle.morple.data.Pt
+import dev.bitspittle.morple.common.board.Pt
 
 class Navigator(
     private val numRows: Int,

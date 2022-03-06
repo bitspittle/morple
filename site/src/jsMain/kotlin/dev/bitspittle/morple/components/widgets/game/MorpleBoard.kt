@@ -7,6 +7,8 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.*
+import dev.bitspittle.morple.common.board.Pt
+import dev.bitspittle.morple.common.board.TileState
 import dev.bitspittle.morple.data.*
 import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.document

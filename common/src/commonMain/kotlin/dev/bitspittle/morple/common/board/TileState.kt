@@ -1,4 +1,4 @@
-package dev.bitspittle.morple.data
+package dev.bitspittle.morple.common.board
 
 enum class TileState {
     ABSENT,

@@ -16,7 +16,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.icons.fa.FaBackspace
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import dev.bitspittle.morple.common.forEachIndexed
+import dev.bitspittle.morple.common.board.TileState
+import dev.bitspittle.morple.common.collections.forEachIndexed
 import dev.bitspittle.morple.data.*
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*

@@ -1,6 +1,4 @@
-import dev.bitspittle.morple.common.List2d
-import dev.bitspittle.morple.generator.BoardGenerator
-import java.nio.charset.Charset
+import dev.bitspittle.morple.common.collections.List2d
 
 fun main() {
 //    val moduleClassloader = BoardGenerator::class.java.classLoader

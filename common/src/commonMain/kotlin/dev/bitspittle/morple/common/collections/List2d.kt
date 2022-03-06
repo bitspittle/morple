@@ -1,4 +1,4 @@
-package dev.bitspittle.morple.common
+package dev.bitspittle.morple.common.collections
 open class List2d<T>(val list1d: List<T>, val numCols: Int) {
     val numRows get() = list1d.size / numCols
     operator fun get(x: Int, y: Int) = list1d[toIndex1d(x, y)]

@@ -1,5 +1,7 @@
 package dev.bitspittle.morple.data
 
+import dev.bitspittle.morple.common.board.TileState
+
 sealed class GameError(val message: String) {
     sealed class Tile(val x: Int, val y: Int, message: String) : GameError(message)
     sealed class LetterTile(val letter: Char, x: Int, y: Int, message: String) : Tile(x, y, message)

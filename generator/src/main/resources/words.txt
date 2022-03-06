@@ -1,0 +1,1 @@
+../../../../site/src/jsMain/resources/public/words.txt

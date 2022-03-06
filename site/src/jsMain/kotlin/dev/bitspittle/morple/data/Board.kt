@@ -1,5 +1,8 @@
 package dev.bitspittle.morple.data
 
+import dev.bitspittle.morple.common.List2d
+import dev.bitspittle.morple.common.MutableList2d
+
 private val ENCODED_PART_REGEX = Regex("""([A-Z]?[+\-*])""")
 
 private val ENCODED_WORDLE_MAP = mapOf(

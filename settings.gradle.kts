@@ -9,5 +9,6 @@ pluginManagement {
 rootProject.name = "morple"
 
 include(":site")
-
+include(":generator")
+include(":common")
 

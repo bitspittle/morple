@@ -11,13 +11,6 @@ plugins {
     alias(libs.plugins.kobwebx.markdown)
 }
 
-repositories {
-    mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    google()
-    maven("https://us-central1-maven.pkg.dev/varabyte-repos/public")
-}
-
 group = "dev.bitspittle.morple"
 version = SimpleDateFormat("yyyyMMdd.kkmm").apply {
     timeZone = TimeZone.getTimeZone("UTC")
@@ -73,6 +66,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
+                implementation(project(":common"))
             }
         }
 

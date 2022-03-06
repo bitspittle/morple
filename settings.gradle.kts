@@ -8,3 +8,6 @@ pluginManagement {
 
 rootProject.name = "morple"
 
+include(":site")
+
+

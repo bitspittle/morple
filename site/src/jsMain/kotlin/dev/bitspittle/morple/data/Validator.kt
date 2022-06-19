@@ -12,7 +12,6 @@ sealed class GameError(val message: String) {
     class InvalidWord(invalidWord: String, y: Int) : Row(y, "\"$invalidWord\" is not an accepted word.")
     class RepeatedWord(repeatedWord: String, y: Int) : Row(y, "\"$repeatedWord\" was already used earlier.")
     class NotAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is present in the final word.")
-    class RepeatedAbsent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is a repeat, and you have more absent repeats than allowed for this puzzle.")
     class NotPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' is not present in the final word (or it is but has already been matched by a different tile).")
     class InvalidPresent(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' matches the final solution when it should not.")
     class InconsistentMatch(letter: Char, x: Int, y: Int) : LetterTile(letter, x, y, "The letter '$letter' does not agree with other matches in the same column.")
@@ -22,7 +21,7 @@ sealed class GameError(val message: String) {
 private const val INVALID_CHAR = '?'
 
 class Validator {
-    fun validate(gameSettings: GameSettings, board: Board, words: Set<String>): List<GameError> {
+    fun validate(board: Board, words: Set<String>): List<GameError> {
         val errors = mutableListOf<GameError>()
 
         val finalWord = (0 until Board.NUM_COLS)
@@ -67,26 +66,6 @@ class Validator {
                     }
                 }
             }
-
-            val totalAbsentCharacters = usedAbsentChars.values.sum()
-
-            // If a puzzle only has three (or less) absent squares in it, it's probably fine if two are the same letter
-            if (totalAbsentCharacters > 3) {
-                val repeatedAbsentCharacters = usedAbsentChars.values.sumOf { it - 1 }
-
-                if ((repeatedAbsentCharacters / totalAbsentCharacters.toFloat()) > gameSettings.maxAbsentRepetitionPercent) {
-                    usedAbsentChars.filter { it.value > 1 }.keys.forEach { overusedLetter ->
-                        for (y in 0 until board.numRows - 1) {
-                            for (x in 0 until Board.NUM_COLS) {
-                                val letter = board.letters[x, y] ?: continue
-                                if (board.tiles[x, y] == TileState.ABSENT && letter == overusedLetter) {
-                                    errors.add(GameError.RepeatedAbsent(letter, x, y))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         // Inconsistent match
@@ -121,7 +100,7 @@ class Validator {
                         if (letter != finalWord[x]) {
                             errors.add(GameError.NotMatch(letter, x, y))
                         } else {
-                            // Remove the letter so it won't be reused by following checks
+                            // Remove the letter, so it won't be reused by following checks
                             mutableFinalWord[x] = INVALID_CHAR
                         }
                     }

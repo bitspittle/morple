@@ -61,15 +61,16 @@ fun HomePage() {
 
     val ctx = rememberPageContext()
 
-    val gameSettings = remember {
-        val gameMode = try {
-            ctx.params["mode"]?.let { GameMode.valueOf(it.uppercase()) } ?: GameMode.EASY
-        } catch (ex: Exception) {
-            GameMode.EASY
-        }
-
-        GameSettings.from(gameMode)
-    }
+    val gameSettings = GameSettings.from(GameMode.HARD)
+//    val gameSettings = remember {
+//        val gameMode = try {
+//            ctx.params["mode"]?.let { GameMode.valueOf(it.uppercase()) } ?: GameMode.EASY
+//        } catch (ex: Exception) {
+//            GameMode.EASY
+//        }
+//
+//        GameSettings.from(gameMode)
+//    }
 
     val board = remember {
         val puzzleValue = ctx.params["puzzle"]
@@ -85,7 +86,7 @@ fun HomePage() {
 
         GameBoard.from(
             gameSettings,
-            SAMPLE_BOARDS.random().toEncoded()
+            "+T*A+R-E-T--A+C-T+S+I--C--K--O-T**-L-I-S*S-+++F++"
         )
     }
 
@@ -155,7 +156,6 @@ fun HomePage() {
                 Keyboard(
                     gameSettings,
                     board,
-                    mutableErrors,
                     onKeyPressed = keyHandler@ { keyAction ->
                         if (mutableGameState.value == GameState.Finished) return@keyHandler
 

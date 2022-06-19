@@ -105,10 +105,10 @@ val HiddenStyle = ComponentStyle.base("morple-hidden") {
 }
 
 @Composable
-private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, action: KeyAction, autoSubmit: Boolean, onKeyPressed: (KeyAction) -> Unit) {
+private fun Key(tileStates: Map<Char, TileState>, action: KeyAction, autoSubmit: Boolean, onKeyPressed: (KeyAction) -> Unit) {
     if (action is KeyAction.Type) {
         val keyVariant = when (tileStates[action.letter]) {
-            TileState.ABSENT -> AbsentKeyVariant.thenIf(overusedChars.contains(action.letter), RepetetiveKeyVariant)
+            TileState.ABSENT -> AbsentKeyVariant
             TileState.PRESENT -> PresentKeyVariant
             TileState.MATCH -> MatchKeyVariant
             null -> null
@@ -142,7 +142,6 @@ private fun Key(tileStates: Map<Char, TileState>, overusedChars: Set<Char>, acti
 fun Keyboard(
     gameSettings: GameSettings,
     board: GameBoard,
-    errors: List<GameError>,
     onKeyPressed: (KeyAction) -> Unit,
     forceInvalidationWhenBoardChanges: () -> Unit,
 ) {
@@ -168,15 +167,11 @@ fun Keyboard(
         }
     }
 
-    val overusedChars = errors
-        .mapNotNull { error -> (error as? GameError.RepeatedAbsent)?.letter }
-        .toSet()
-
     Column(KeyboardStyle.toModifier(), horizontalAlignment = Alignment.CenterHorizontally) {
         KEYBOARD_LAYOUT.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 row.forEach { keyAction ->
-                    Key(tileStates, overusedChars, keyAction, gameSettings.showErrorsInstantly, onKeyPressed)
+                    Key(tileStates, keyAction, gameSettings.showErrorsInstantly, onKeyPressed)
                 }
             }
         }

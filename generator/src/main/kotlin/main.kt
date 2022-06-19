@@ -1,19 +1,23 @@
-import dev.bitspittle.morple.common.collections.List2d
+import dev.bitspittle.morple.generator.BoardGenerator
+import dev.bitspittle.morple.generator.generatePuzzle
+import java.io.File
+
+private class DummyForClassLoader
 
 fun main() {
-//    val moduleClassloader = BoardGenerator::class.java.classLoader
-//    val words = moduleClassloader.getResourceAsStream("words.txt")!!
-//        .readAllBytes().toString(Charsets.UTF_8)
-//        .split("\n")
-//        .toSet()
+    val moduleClassloader = DummyForClassLoader::class.java.classLoader
+    val commonWords = moduleClassloader.getResourceAsStream("common-words.txt")!!
+        .readAllBytes().toString(Charsets.UTF_8)
+        .split("\n")
+        .toSet()
 
-    // Test List2d was imported
-    val ints = List2d(listOf(1, 2, 3, 4), 2)
-    for (y in 0 until ints.numRows) {
-        for (x in 0 until ints.numCols) {
-            print(ints[x, y])
-            print(" ")
-        }
-        println()
-    }
+    val allWords = moduleClassloader.getResourceAsStream("words.txt")!!
+        .readAllBytes().toString(Charsets.UTF_8)
+        .split("\n")
+        .toSet()
+
+    val generator = BoardGenerator(allWords, commonWords)
+    val board = generator.generate()
+    print(board)
+    print(board.generatePuzzle(allWords))
 }

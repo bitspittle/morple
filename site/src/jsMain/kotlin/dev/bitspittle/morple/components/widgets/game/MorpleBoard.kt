@@ -140,12 +140,7 @@ fun MorpleBoard(
                                     .any() -> EmptyErrorTileVariant
 
                                 showErrors && tileErrors.filterIsInstance<GameError.LetterTile>()
-                                    .any { it !is GameError.RepeatedAbsent } ->
-                                    LetterErrorTileVariant
-
-                                // Repeated tiles are too hard to reason about without doing math, so always show them
-                                tileErrors.filterIsInstance<GameError.RepeatedAbsent>().any() ->
-                                    LetterWarningTileVariant
+                                    .any() -> LetterErrorTileVariant
 
                                 else -> ComponentVariant.Empty
                             }

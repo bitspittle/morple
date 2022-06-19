@@ -1,0 +1,2 @@
+Note: `common-words.txt` is created by reading https://github.com/first20hours/google-10000-english/blob/master/20k.txt,
+then filtering out the words of length 5 that also show up in the official Wordle list of words.

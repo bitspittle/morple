@@ -26,7 +26,7 @@ class CommandHandler(
     private fun updateBoardAndErrors() {
         board.resetLetters(actionsUndo)
         mutableErrors.clear()
-        mutableErrors.addAll(validator.validate(gameSettings, board, words))
+        mutableErrors.addAll(validator.validate(board, words))
 
         mutableShowErrors.value = gameSettings.showErrorsInstantly && mutableErrors.isNotEmpty()
     }

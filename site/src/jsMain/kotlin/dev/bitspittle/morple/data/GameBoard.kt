@@ -6,6 +6,8 @@ import dev.bitspittle.morple.common.board.FinalizedBoard
 import dev.bitspittle.morple.common.board.MutableBoard
 import dev.bitspittle.morple.common.board.TileState
 import dev.bitspittle.morple.common.collections.List2d
+import dev.bitspittle.morple.common.collections.forEachIndexed
+import dev.bitspittle.morple.common.collections.forEachRowIndexed
 import dev.bitspittle.morple.common.collections.map
 
 private val ENCODED_PART_REGEX = Regex("""([A-Z]?[+\-*])""")
@@ -102,6 +104,8 @@ class GameBoard(private val gameSettings: GameSettings, private val initialState
                 }
             }
         }
+
+        resetLetters(listOf())
     }
 
     /**
@@ -118,19 +122,6 @@ class GameBoard(private val gameSettings: GameSettings, private val initialState
             if (isLocked[action.x, action.y]) return@forEach
 
             letters[action.x, action.y] = action.letter
-
-            if (gameSettings.autoFillMatchColumns) {
-                // If editing a match tile, set all vertical match tiles as well
-                if (tiles[action.x, action.y] == TileState.MATCH) {
-                    (0 until numRows)
-                        .filter { y -> y != action.y }
-                        .forEach { y ->
-                            if (!isLocked[action.x, y] && tiles[action.x, y] == TileState.MATCH) {
-                                letters[action.x, y] = action.letter
-                            }
-                        }
-                }
-            }
         }
 
         isFilled = letters.list1d.all { it != null }

@@ -5,6 +5,7 @@ import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.TextAlign
 import com.varabyte.kobweb.compose.css.UserSelect
+import com.varabyte.kobweb.compose.dom.ElementRefScope
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -16,7 +17,6 @@ import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.text.SpanText
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
 private val ComponentModifier.FILLED_TILE_STYLE get() = Modifier
@@ -81,11 +81,11 @@ fun Tile() {
 }
 
 @Composable
-fun Tile(letter: Char?, locked: Boolean, modifier: Modifier = Modifier, variant: ComponentVariant? = null, elementScope: (@Composable ElementScope<HTMLElement>.() -> Unit)? = null) {
+fun Tile(letter: Char?, locked: Boolean, modifier: Modifier = Modifier, variant: ComponentVariant? = null, ref: ElementRefScope<HTMLElement>? = null) {
     // Variants are used to indicate what kind of active tile this is -- otherwise, it's just an empty, non-focusable
     // tile
     val focusable = Modifier.tabIndex(0).takeIf { variant != null } ?: Modifier
-    Box(TileStyle.toModifier(variant).then(modifier).then(focusable), elementScope = elementScope) {
+    Box(TileStyle.toModifier(variant).then(modifier).then(focusable), ref = ref) {
         if (letter != null) {
             if (locked) {
                 FaLock(LockStyle.toModifier().then(Modifier.align(Alignment.TopStart)))

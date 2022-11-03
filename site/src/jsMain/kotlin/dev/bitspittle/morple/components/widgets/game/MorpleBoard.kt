@@ -1,6 +1,7 @@
 package dev.bitspittle.morple.components.widgets.game
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.dom.disposableRef
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -147,13 +148,10 @@ fun MorpleBoard(
                                 else -> ComponentVariant.Empty
                             }
                         }).thenIf(gameState != GameState.Finished && x == activeTile.x && y == activeTile.y, FocusedTileVariant),
-                        elementScope = {
-                            DisposableEffect(Unit) {
-                                val div = scopeElement
-                                tileRefs.add(div)
-                                onDispose { tileRefs.remove(div) }
-                            }
-                        }
+                        ref = disposableRef {  element ->
+                            tileRefs.add(element)
+                            onDispose { tileRefs.remove(element) }
+                        },
                     )
                 }
             }

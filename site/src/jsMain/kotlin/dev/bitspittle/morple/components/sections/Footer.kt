@@ -1,6 +1,7 @@
 package dev.bitspittle.morple.components.sections
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.css.JustifyContent
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment

@@ -18,7 +18,7 @@ import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
 import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.style.*
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import com.varabyte.kobweb.silk.components.text.Text
+import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.SilkTheme
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
@@ -62,7 +62,7 @@ fun Footer(modifier: Modifier = Modifier) {
         }
 
         Row {
-            Text("© 2022, David Herman", CopyrightStyle.toModifier())
+            SpanText("© 2022, David Herman", CopyrightStyle.toModifier())
         }
     }
 }

@@ -11,7 +11,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.ComponentStyle
 import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.components.style.toModifier
-import com.varabyte.kobweb.silk.components.text.Text
+import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.toSilkPalette
 import dev.bitspittle.morple.components.widgets.button.ColorModeButton
 import org.jetbrains.compose.web.css.*
@@ -50,8 +50,8 @@ fun Header(extraAction: (@Composable () -> Unit)? = null) {
             }
         }
         Column(Modifier.align(Alignment.Center)) {
-            Text("Morple", MorpleTitleStyle.toModifier())
-            Text("v" + AppGlobals.getValue("version"), VersionTextStyle.toModifier().fillMaxWidth())
+            SpanText("Morple", MorpleTitleStyle.toModifier())
+            SpanText("v" + AppGlobals.getValue("version"), VersionTextStyle.toModifier().fillMaxWidth())
         }
         ColorModeButton(HeaderButtonStyle.toModifier().align(Alignment.CenterEnd))
     }

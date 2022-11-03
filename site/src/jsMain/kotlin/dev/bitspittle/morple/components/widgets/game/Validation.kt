@@ -3,7 +3,7 @@ package dev.bitspittle.morple.components.widgets.game
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
-import com.varabyte.kobweb.silk.components.icons.fa.FaExclamationCircle
+import com.varabyte.kobweb.silk.components.icons.fa.FaCircleExclamation
 import com.varabyte.kobweb.silk.components.style.*
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
@@ -22,5 +22,5 @@ val ShowValidationVariant = ValidationStyle.addVariantBase("show") {
 
 @Composable
 fun Validation(modifier: Modifier = Modifier, variant: ComponentVariant? = null) {
-    FaExclamationCircle(ValidationStyle.toModifier(variant).then(modifier))
+    FaCircleExclamation(ValidationStyle.toModifier(variant).then(modifier))
 }

@@ -10,9 +10,9 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
-import com.varabyte.kobweb.silk.components.icons.fa.FaExclamationCircle
+import com.varabyte.kobweb.silk.components.icons.fa.FaCircleExclamation
 import com.varabyte.kobweb.silk.components.style.*
-import com.varabyte.kobweb.silk.components.text.Text
+import com.varabyte.kobweb.silk.components.text.SpanText
 import dev.bitspittle.morple.common.board.Board
 import dev.bitspittle.morple.common.board.Pt
 import dev.bitspittle.morple.common.collections.MutableList2d
@@ -105,7 +105,7 @@ fun HomePage() {
         extraAction = {
             val showErrors by mutableShowErrors
             if (showErrors && indexedTileErrors.contains(activeTile) || indexedRowErrors.contains(activeTile.y)) {
-                FaExclamationCircle(ErrorIconStyle.toModifier().onClick {
+                FaCircleExclamation(ErrorIconStyle.toModifier().onClick {
                     showErrorModal = true
                 })
             }
@@ -176,10 +176,10 @@ fun HomePage() {
             Modal(onCloseRequested = { showErrorModal = false }) {
                 Column(Modifier.rowGap(1.cssRem)) {
                     indexedRowErrors[activeTile.y]?.forEach {
-                        Div { Text(it.message) }
+                        Div { SpanText(it.message) }
                     }
                     indexedTileErrors[activeTile]?.forEach {
-                        Div { Text(it.message) }
+                        Div { SpanText(it.message) }
                     }
                 }
             }

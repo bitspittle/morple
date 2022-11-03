@@ -4,15 +4,17 @@ import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.style.*
 import dev.bitspittle.morple.common.board.Board
 import dev.bitspittle.morple.common.board.Pt
 import dev.bitspittle.morple.common.board.TileState
-import dev.bitspittle.morple.data.*
+import dev.bitspittle.morple.data.GameBoard
+import dev.bitspittle.morple.data.GameError
+import dev.bitspittle.morple.data.GameSettings
 import dev.bitspittle.morple.toSitePalette
 import kotlinx.browser.document
+import org.jetbrains.compose.web.css.*
 import org.w3c.dom.HTMLElement
 
 private val LETTER_CODES = (('a' .. 'z') + ('A'..'Z')).associate { it.toString() to it.uppercaseChar() }
@@ -43,11 +45,11 @@ val BoardStyle = ComponentStyle.base("morple-board") {
 }
 
 val FinishedBoardStyle = ComponentStyle.base("morple-finished-board") {
-    Modifier.boxShadow("0 0 10px 4px ${colorMode.toSitePalette().tile.match.toCssColor()}")
+    Modifier.boxShadow(blurRadius = 10.px, spreadRadius = 4.px, color = colorMode.toSitePalette().tile.match)
 }
 
 val ErrorRowStyle = ComponentStyle.base("morple-error-row") {
-    Modifier.boxShadow("0 0 4px 1px ${colorMode.toSitePalette().error.toCssColor()}")
+    Modifier.boxShadow(blurRadius = 4.px, spreadRadius = 1.px, color = colorMode.toSitePalette().error)
 }
 
 @Composable
@@ -146,8 +148,10 @@ fun MorpleBoard(
                             }
                         }).thenIf(gameState != GameState.Finished && x == activeTile.x && y == activeTile.y, FocusedTileVariant),
                         elementScope = {
-                            DomSideEffect { div ->
+                            DisposableEffect(Unit) {
+                                val div = scopeElement
                                 tileRefs.add(div)
+                                onDispose { tileRefs.remove(div) }
                             }
                         }
                     )

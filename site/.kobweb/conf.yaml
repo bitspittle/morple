@@ -8,6 +8,7 @@ server:
       script: "../build/js/packages/morple/kotlin/morple.js"
       api: "build/libs/morple.jar"
     prod:
+      script: "build/distributions/morple.js"
       siteRoot: ".kobweb/site"
 
   port: 8080

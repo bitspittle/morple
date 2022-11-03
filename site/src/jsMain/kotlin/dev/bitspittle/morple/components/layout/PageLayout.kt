@@ -11,7 +11,6 @@ import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.silk.components.style.ComponentStyle
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.style.toModifier
-import com.varabyte.kobweb.silk.components.text.Text
 import dev.bitspittle.morple.components.sections.Footer
 import dev.bitspittle.morple.components.sections.Header
 import kotlinx.browser.document

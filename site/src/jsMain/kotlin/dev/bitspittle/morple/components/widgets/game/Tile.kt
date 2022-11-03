@@ -13,7 +13,7 @@ import com.varabyte.kobweb.compose.ui.graphics.toCssColor
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.icons.fa.FaLock
 import com.varabyte.kobweb.silk.components.style.*
-import com.varabyte.kobweb.silk.components.text.Text
+import com.varabyte.kobweb.silk.components.text.SpanText
 import dev.bitspittle.morple.toSitePalette
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -67,11 +67,12 @@ val LetterWarningTileVariant = TileStyle.addVariantBase("warn-letter") {
 
 // Changing the text color of empty tiles is useless... so outline them instead!
 val EmptyErrorTileVariant = TileStyle.addVariantBase("error-empty") {
-    Modifier.boxShadow("0 0 4px 1px ${colorMode.toSitePalette().error.toCssColor()}")
+    Modifier.boxShadow(blurRadius = 4.px, spreadRadius = 1.px, color = colorMode.toSitePalette().error)
+
 }
 
 val FocusedTileVariant = TileStyle.addVariantBase("focused") {
-    Modifier.boxShadow("0 0 6px 2px ${colorMode.toSitePalette().tile.focused.toCssColor()}")
+    Modifier.boxShadow(blurRadius = 6.px, spreadRadius = 2.px, color = colorMode.toSitePalette().tile.focused)
 }
 
 @Composable
@@ -89,7 +90,7 @@ fun Tile(letter: Char?, locked: Boolean, modifier: Modifier = Modifier, variant:
             if (locked) {
                 FaLock(LockStyle.toModifier().then(Modifier.align(Alignment.TopStart)))
             }
-            Text(letter.uppercaseChar().toString(), Modifier.align(Alignment.Center))
+            SpanText(letter.uppercaseChar().toString(), Modifier.align(Alignment.Center))
         }
     }
 }
